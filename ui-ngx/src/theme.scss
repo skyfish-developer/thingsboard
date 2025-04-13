@@ -22,20 +22,20 @@
 @include mat.core();
 
 $tb-mat-indigo: (
-  50: #e8eaf6,
-  100: #c5cae9,
-  200: #9fa8da,
-  300: #7986cb,
-  400: #5c6bc0,
-  500: $tb-primary-color,
-  600: $tb-secondary-color,
-  700: #303f9f,
-  800: #283593,
-  900: #1a237e,
-  A100: $tb-hue3-color,
-  A200: #536dfe,
-  A400: #3d5afe,
-  A700: #304ffe,
+  50: #e3f2fd,
+  100: #b3d3f5,
+  200: #82b3ec,
+  300: #5193e2,
+  400: #287bd8,
+  500: #005B96, // Azul principal
+  600: #0072a3, // Azul mais claro (secundário)
+  700: #00507a,
+  800: #003b5e,
+  900: #002944,
+  A100: #ccf3ec, // Verde clarinho
+  A200: #00A676, // Verde principal
+  A400: #00916a,
+  A700: #007a5b,
   contrast: (
     50: rgba(black, 0.87),
     100: rgba(black, 0.87),
@@ -55,7 +55,36 @@ $tb-mat-indigo: (
 );
 
 $tb-primary: mat.m2-define-palette($tb-mat-indigo);
-$tb-accent: mat.m2-define-palette(mat.$m2-deep-orange-palette);
+//$tb-accent: mat.m2-define-palette(mat.$m2-deep-orange-palette);
+
+$tb-accent: mat.m2-define-palette((
+  50: #e0f7ec,
+  100: #b2ebd5,
+  200: #80e0ba,
+  300: #4dd5a0,
+  400: #26cc8b,
+  500: #00A676, // sua cor principal
+  600: #00986b,
+  700: #00885e,
+  800: #007952,
+  900: #00633f,
+  A100: #aaffdf,
+  A200: #55ffb6,
+  A400: #00ff90,
+  A700: #00e683,
+  contrast: (
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(0,0,0,0.87),
+    A200: rgba(0,0,0,0.87),
+    A400: rgba(0,0,0,0.87),
+    A700: rgba(0,0,0,0.87),
+  )
+));
+
 
 $background: (background: map_get(mat.$m2-grey-palette, 200));
 
@@ -81,37 +110,38 @@ $primary: mat.m2-get-color-from-palette($tb-primary);
 $accent: mat.m2-get-color-from-palette($tb-accent);
 
 $tb-dark-mat-indigo: (
-  50: #e8eaf6,
-  100: #c5cae9,
-  200: #9fa8da,
-  300: #7986cb,
-  400: #5c6bc0,
-  500: $tb-dark-primary-color,
-  600: $tb-secondary-color,
-  700: #303f9f,
-  800: $tb-primary-color,
-  900: #1a237e,
-  A100: $tb-hue3-color,
-  A200: #536dfe,
-  A400: #3d5afe,
-  A700: #304ffe,
+  50: #e3f2fd,
+  100: #c8e0f4,
+  200: #a3cbe8,
+  300: #7fb7dd,
+  400: #5aa2d2,
+  500: #005B96, // Azul escuro principal
+  600: #0073b7, // Um azul um pouco mais vibrante
+  700: #00507a, // Tom mais escuro ainda do azul
+  800: #003f66, // Azul muito escuro
+  900: #002e4d, // Azul quase preto
+  A100: #b2f0e4, // Tom claro do verde
+  A200: #00A676, // Verde principal
+  A400: #00956a, // Verde mais escuro
+  A700: #007f5a, // Verde ainda mais escuro
   contrast: (
     50: rgba(black, 0.87),
     100: rgba(black, 0.87),
     200: rgba(black, 0.87),
     300: rgba(black, 0.87),
     400: rgba(black, 0.87),
-    500: map_get($tb-mat-indigo, 900),
+    500: white,
     600: white,
     700: white,
     800: white,
     900: white,
     A100: rgba(black, 0.87),
-    A200: rgba(black, 0.87),
-    A400: rgba(black, 0.87),
-    A700: rgba(black, 0.87),
+    A200: white,
+    A400: white,
+    A700: white,
   )
 );
+
 
 $tb-dark-primary: mat.m2-define-palette($tb-dark-mat-indigo);
 
