@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,9 +37,8 @@ public class CalculatedFieldDebugEventFilter extends DebugEventFilter {
             example = "{\"x\":{\"ts\":1739432016629,\"value\":20},\"y\":{\"ts\":1739429717656,\"value\":12}}")
     protected String arguments;
     @Schema(description = "String value representing the result of a calculation",
-            example = "{\"x + y\":54}")
+            example = "{\"x + y\":32}")
     protected String result;
-
 
     @Override
     public EventType getEventType() {

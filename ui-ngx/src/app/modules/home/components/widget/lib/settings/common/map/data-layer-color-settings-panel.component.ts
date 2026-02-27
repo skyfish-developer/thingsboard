@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -28,11 +28,12 @@ import { DataKeyType } from '@shared/models/telemetry/telemetry.models';
 import { MapSettingsContext } from '@home/components/widget/lib/settings/common/map/map-settings.component.models';
 
 @Component({
-  selector: 'tb-data-layer-color-settings-panel',
-  templateUrl: './data-layer-color-settings-panel.component.html',
-  providers: [],
-  styleUrls: ['./data-layer-color-settings-panel.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'tb-data-layer-color-settings-panel',
+    templateUrl: './data-layer-color-settings-panel.component.html',
+    providers: [],
+    styleUrls: ['./data-layer-color-settings-panel.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class DataLayerColorSettingsPanelComponent extends PageComponent implements OnInit {
 
@@ -101,7 +102,7 @@ export class DataLayerColorSettingsPanelComponent extends PageComponent implemen
   }
 
   applyColorSettings() {
-    const colorSettings: DataLayerColorSettings = this.colorSettingsFormGroup.value;
+    const colorSettings: DataLayerColorSettings = this.colorSettingsFormGroup.getRawValue();
     this.colorSettingsApplied.emit(colorSettings);
   }
 
@@ -122,8 +123,15 @@ export class DataLayerColorSettingsPanelComponent extends PageComponent implemen
     const type: DataLayerColorType = this.colorSettingsFormGroup.get('type').value;
     if (type === DataLayerColorType.range) {
       this.colorSettingsFormGroup.get('rangeKey').enable({emitEvent: false});
+      this.colorSettingsFormGroup.get('range').enable({emitEvent: false});
     } else {
       this.colorSettingsFormGroup.get('rangeKey').disable({emitEvent: false});
+      this.colorSettingsFormGroup.get('range').disable({emitEvent: false});
+    }
+    if (type === DataLayerColorType.function) {
+      this.colorSettingsFormGroup.get('colorFunction').enable({emitEvent: false});
+    } else {
+      this.colorSettingsFormGroup.get('colorFunction').disable({emitEvent: false});
     }
   }
 }

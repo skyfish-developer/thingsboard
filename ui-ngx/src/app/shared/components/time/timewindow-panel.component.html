@@ -1,6 +1,6 @@
 <!--
 
-    Copyright © 2016-2025 The Thingsboard Authors
+    Copyright © 2016-2026 The Thingsboard Authors
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
     </button>
   </div>
 
-  <div class="tb-timewindow-form-content tb-form-panel no-border">
+  <div class="tb-timewindow-form-content tb-form-panel no-border" [class.no-padding]="!panelMode">
     <ng-container *ngIf="timewindowForm.get('selectedTab').value === timewindowTypes.REALTIME">
       <section class="tb-form-panel stroked" *ngIf="realtimeIntervalSelectionAvailable; else timezoneSelectionPanel">
         <div class="tb-flex space-between"
@@ -173,6 +173,11 @@
         </ng-container>
       </section>
     </ng-container>
+    @if (saveAsDefaultAvailable) {
+      <mat-checkbox class="tb-timewindow-form-checkbox" [formControl]="saveTimewindowControl">
+        {{ 'timewindow.save-current-settings-as-default' | translate }}
+      </mat-checkbox>
+    }
   </div>
 
   <ng-template #timezoneSelectionPanel>
@@ -189,8 +194,8 @@
                  formControlName="timezone">
     </tb-timezone>
   </ng-template>
-  <mat-divider></mat-divider>
-  <div class="tb-panel-actions tb-flex flex-end no-gap">
+  <mat-divider *ngIf="panelMode"></mat-divider>
+  <div class="tb-panel-actions tb-flex flex-end no-gap" *ngIf="panelMode">
     <button type="button"
             mat-button
             [disabled]="(isLoading$ | async)"

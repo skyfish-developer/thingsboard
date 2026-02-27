@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 /// limitations under the License.
 ///
 
-import { Component, DestroyRef } from '@angular/core';
+import { Component, DestroyRef, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { AppState } from '@core/core.state';
 import { EntityTabsComponent } from '../../components/entity/entity-tabs.component';
@@ -27,11 +27,12 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'tb-device-profile-tabs',
-  templateUrl: './device-profile-tabs.component.html',
-  styleUrls: []
+    selector: 'tb-device-profile-tabs',
+    templateUrl: './device-profile-tabs.component.html',
+    styleUrls: [],
+    standalone: false
 })
-export class DeviceProfileTabsComponent extends EntityTabsComponent<DeviceProfile> {
+export class DeviceProfileTabsComponent extends EntityTabsComponent<DeviceProfile> implements OnInit {
 
   deviceTransportTypes = Object.values(DeviceTransportType);
 
@@ -40,6 +41,9 @@ export class DeviceProfileTabsComponent extends EntityTabsComponent<DeviceProfil
   deviceTransportTypeHints = deviceTransportTypeHintMap;
 
   isTransportTypeChanged = false;
+
+  hasOldRules = false;
+  alarmRulesOldVersion = false;
 
   constructor(protected store: Store<AppState>,
               private destroyRef: DestroyRef) {
@@ -53,6 +57,13 @@ export class DeviceProfileTabsComponent extends EntityTabsComponent<DeviceProfil
     ).subscribe(() => {
       this.isTransportTypeChanged = true;
     });
+  }
+
+  protected setEntity(entity: DeviceProfile) {
+    this.isTransportTypeChanged = false;
+    this.hasOldRules = !!entity?.profileData?.alarms?.length;
+    this.alarmRulesOldVersion = false;
+    super.setEntity(entity);
   }
 
 }

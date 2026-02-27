@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,14 @@ public enum NotificationType {
     ALARM_ASSIGNMENT,
     NEW_PLATFORM_VERSION,
     ENTITIES_LIMIT,
+    ENTITIES_LIMIT_INCREASE_REQUEST,
     API_USAGE_LIMIT,
     RULE_NODE,
     RATE_LIMITS,
     EDGE_CONNECTION,
     EDGE_COMMUNICATION_FAILURE,
-    TASK_PROCESSING_FAILURE;
+    TASK_PROCESSING_FAILURE,
+    RESOURCES_SHORTAGE;
 
     @Getter
     private boolean system; // for future use and compatibility with PE

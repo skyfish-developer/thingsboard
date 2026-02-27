@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -38,17 +38,18 @@ import { IAliasController } from '@core/api/widget-api.models';
 import { TargetDevice, widgetType } from '@shared/models/widget.models';
 
 @Component({
-  selector: 'tb-get-value-action-settings',
-  templateUrl: './action-settings-button.component.html',
-  styleUrls: ['./action-settings-button.scss'],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => GetValueActionSettingsComponent),
-      multi: true
-    }
-  ],
-  encapsulation: ViewEncapsulation.None
+    selector: 'tb-get-value-action-settings',
+    templateUrl: './action-settings-button.component.html',
+    styleUrls: ['./action-settings-button.scss'],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => GetValueActionSettingsComponent),
+            multi: true
+        }
+    ],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class GetValueActionSettingsComponent implements OnInit, ControlValueAccessor {
 
@@ -129,23 +130,25 @@ export class GetValueActionSettingsComponent implements OnInit, ControlValueAcce
     if (this.popoverService.hasPopover(trigger)) {
       this.popoverService.hidePopover(trigger);
     } else {
-      const ctx: any = {
-        getValueSettings: this.modelValue,
-        panelTitle: this.panelTitle,
-        valueType: this.valueType,
-        trueLabel: this.trueLabel,
-        falseLabel: this.falseLabel,
-        stateLabel: this.stateLabel,
-        aliasController: this.aliasController,
-        targetDevice: this.targetDevice,
-        widgetType: this.widgetType
-      };
-      const getValueSettingsPanelPopover = this.popoverService.displayPopover(trigger, this.renderer,
-        this.viewContainerRef, GetValueActionSettingsPanelComponent,
-        ['leftTopOnly', 'leftOnly', 'leftBottomOnly'], true, null,
-        ctx,
-        {},
-        {}, {}, true);
+      const getValueSettingsPanelPopover = this.popoverService.displayPopover({
+        trigger,
+        renderer: this.renderer,
+        componentType: GetValueActionSettingsPanelComponent,
+        hostView: this.viewContainerRef,
+        preferredPlacement: ['leftTopOnly', 'leftOnly', 'leftBottomOnly'],
+        context: {
+          getValueSettings: this.modelValue,
+          panelTitle: this.panelTitle,
+          valueType: this.valueType,
+          trueLabel: this.trueLabel,
+          falseLabel: this.falseLabel,
+          stateLabel: this.stateLabel,
+          aliasController: this.aliasController,
+          targetDevice: this.targetDevice,
+          widgetType: this.widgetType
+        },
+        isModal: true
+      });
       getValueSettingsPanelPopover.tbComponentRef.instance.popover = getValueSettingsPanelPopover;
       getValueSettingsPanelPopover.tbComponentRef.instance.getValueSettingsApplied.subscribe((getValueSettings) => {
         getValueSettingsPanelPopover.hide();

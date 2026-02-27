@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.thingsboard.server.transport.lwm2m.client;
 
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.leshan.client.LeshanClient;
 import org.eclipse.leshan.client.resource.BaseInstanceEnabler;
 import org.eclipse.leshan.client.servers.LwM2mServer;
 import org.eclipse.leshan.core.model.ObjectModel;
@@ -32,6 +33,8 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import static org.thingsboard.server.dao.service.OtaPackageServiceTest.TARGET_FW_VERSION;
+import static org.thingsboard.server.dao.service.OtaPackageServiceTest.TITLE;
 
 @Slf4j
 public class FwLwM2MDevice extends BaseInstanceEnabler implements Destroyable {
@@ -43,6 +46,12 @@ public class FwLwM2MDevice extends BaseInstanceEnabler implements Destroyable {
     private final AtomicInteger state = new AtomicInteger(0);
 
     private final AtomicInteger updateResult = new AtomicInteger(0);
+
+    private LeshanClient leshanClient;
+    private String pkgNameDef = "firmware";
+    private String pkgName;
+    private String pkgVersionDef = "1.0.0";
+    private String pkgVersion;
 
     @Override
     public ReadResponse read(LwM2mServer identity, int resourceId) {
@@ -74,7 +83,7 @@ public class FwLwM2MDevice extends BaseInstanceEnabler implements Destroyable {
 
         switch (resourceId) {
             case 2:
-                startUpdating();
+                startUpdating(identity);
                 return ExecuteResponse.success();
             default:
                 return super.execute(identity, resourceId, arguments);
@@ -106,11 +115,13 @@ public class FwLwM2MDevice extends BaseInstanceEnabler implements Destroyable {
     }
 
     private String getPkgName() {
-        return "firmware";
+        this.pkgName = this.pkgName == null ? this.pkgNameDef : this.pkgName;
+        return this.pkgName;
     }
 
     private String getPkgVersion() {
-        return "1.0.0";
+        this.pkgVersion = this.pkgVersion == null ? this.pkgVersionDef : this.pkgVersion;
+        return this.pkgVersion;
     }
 
     private int getFirmwareUpdateDeliveryMethod() {
@@ -125,32 +136,65 @@ public class FwLwM2MDevice extends BaseInstanceEnabler implements Destroyable {
     @Override
     public void destroy() {
         scheduler.shutdownNow();
+        this.leshanClient = null;
     }
 
     private void startDownloading() {
+        long delay = 0;
+        // Step 1: state = 1
         scheduler.schedule(() -> {
-            try {
-                state.set(1);
-                fireResourceChange(3);
-                Thread.sleep(100);
-                state.set(2);
-                fireResourceChange(3);
-            } catch (Exception e) {
-            }
-        }, 100, TimeUnit.MILLISECONDS);
+            state.set(1);
+            fireResourceChange(3);
+            log.info("Downloading started: state=[{}]", state.get());
+        }, delay, TimeUnit.MILLISECONDS);
+
+        delay += 100; // next step after 100 ms
+
+        // Step 2: state = 2
+        scheduler.schedule(() -> {
+            state.set(2);
+            fireResourceChange(3);
+            log.info("Downloading in progress: state=[{}]", state.get());
+        }, delay, TimeUnit.MILLISECONDS);
     }
 
-    private void startUpdating() {
+
+    private void startUpdating(LwM2mServer identity) {
         scheduler.schedule(() -> {
             try {
+                // Update state + result
                 state.set(3);
                 fireResourceChange(3);
-                Thread.sleep(100);
+
                 updateResult.set(1);
                 fireResourceChange(5);
+
+                if (this.leshanClient != null) {
+                    log.info("Stop/reboot LwM2M client {}", this.leshanClient.getEndpoint(identity));
+                    this.leshanClient.stop(false);
+
+                    log.info("Start after update fw LwM2M client {}", this.leshanClient.getEndpoint(identity));
+                    this.leshanClient.start();
+
+                    // Delayed reset pkgName/pkgVersion, after reboot + registration
+                    scheduler.schedule(() -> {
+                        this.pkgName = this.pkgNameDef;
+                        fireResourceChange(6);
+
+                        this.pkgVersion = this.pkgVersionDef;
+                        fireResourceChange(7);
+
+                        log.info("FW resources updating to new values: pkgName=[{}], pkgVersion=[{}]",
+                                this.pkgName, this.pkgVersion);
+                    }, 15, TimeUnit.SECONDS); // 15 sec — safe timing
+                }
             } catch (Exception e) {
+                log.error("Error during firmware update", e);
             }
-        }, 100, TimeUnit.MILLISECONDS);
+        }, 0, TimeUnit.SECONDS); // start immediately, without further delay
     }
 
+    protected void setLeshanClient(LeshanClient leshanClient) {
+        this.leshanClient = leshanClient;
+    }
 }

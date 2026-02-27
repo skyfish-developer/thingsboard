@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -34,10 +34,11 @@ import { filter } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'tb-map-timeline-panel',
-  templateUrl: './map-timeline-panel.component.html',
-  styleUrls: ['./map-timeline-panel.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'tb-map-timeline-panel',
+    templateUrl: './map-timeline-panel.component.html',
+    styleUrls: ['./map-timeline-panel.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class MapTimelinePanelComponent implements OnInit, OnDestroy {
 
@@ -202,7 +203,10 @@ export class MapTimelinePanelComponent implements OnInit, OnDestroy {
   public moveNext() {
     if (this.index < this.maxTimeIndex) {
       if (this.settings.snapToRealLocation) {
-        const anchorIndex = this.findIndex(this.currentTime, this.anchors) + 1;
+        let anchorIndex = this.findIndex(this.currentTime, this.anchors) + 1;
+        if (anchorIndex >= this.anchors.length) {
+          anchorIndex = this.anchors.length - 1;
+        }
         this.index = Math.floor((this.anchors[anchorIndex] - this.minValue) / this.settings.timeStep);
       } else {
         this.index++;
@@ -214,7 +218,10 @@ export class MapTimelinePanelComponent implements OnInit, OnDestroy {
   public movePrev() {
     if (this.index > this.minTimeIndex) {
       if (this.settings.snapToRealLocation) {
-        const anchorIndex = this.findIndex(this.currentTime, this.anchors) - 1;
+        let anchorIndex = this.findIndex(this.currentTime, this.anchors) - 1;
+        if (anchorIndex < 0) {
+          anchorIndex = 0;
+        }
         this.index = Math.floor((this.anchors[anchorIndex] - this.minValue) / this.settings.timeStep);
       } else {
         this.index--;

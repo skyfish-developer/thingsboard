@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -41,17 +41,18 @@ import {
 } from '@home/components/widget/lib/settings/common/action/widget-action-settings-panel.component';
 
 @Component({
-  selector: 'tb-widget-action-settings',
-  templateUrl: './action-settings-button.component.html',
-  styleUrls: ['./action-settings-button.scss'],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => WidgetActionSettingsComponent),
-      multi: true
-    }
-  ],
-  encapsulation: ViewEncapsulation.None
+    selector: 'tb-widget-action-settings',
+    templateUrl: './action-settings-button.component.html',
+    styleUrls: ['./action-settings-button.scss'],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => WidgetActionSettingsComponent),
+            multi: true
+        }
+    ],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class WidgetActionSettingsComponent implements OnInit, ControlValueAccessor {
 
@@ -114,19 +115,21 @@ export class WidgetActionSettingsComponent implements OnInit, ControlValueAccess
     if (this.popoverService.hasPopover(trigger)) {
       this.popoverService.hidePopover(trigger);
     } else {
-      const ctx: any = {
-        widgetAction: this.modelValue,
-        panelTitle: this.panelTitle,
-        widgetType: this.widgetType,
-        callbacks: this.callbacks,
-        additionalWidgetActionTypes: this.additionalWidgetActionTypes
-      };
-      const widgetActionSettingsPanelPopover = this.popoverService.displayPopover(trigger, this.renderer,
-        this.viewContainerRef, WidgetActionSettingsPanelComponent,
-        ['leftTopOnly', 'leftOnly', 'leftBottomOnly'], true, null,
-        ctx,
-        {},
-        {}, {}, true);
+      const widgetActionSettingsPanelPopover = this.popoverService.displayPopover({
+        trigger,
+        renderer: this.renderer,
+        componentType: WidgetActionSettingsPanelComponent,
+        hostView: this.viewContainerRef,
+        preferredPlacement: ['leftTopOnly', 'leftOnly', 'leftBottomOnly'],
+        context: {
+          widgetAction: this.modelValue,
+          panelTitle: this.panelTitle,
+          widgetType: this.widgetType,
+          callbacks: this.callbacks,
+          additionalWidgetActionTypes: this.additionalWidgetActionTypes
+        },
+        isModal: true
+      });
       widgetActionSettingsPanelPopover.tbComponentRef.instance.widgetActionApplied.subscribe((widgetAction) => {
         widgetActionSettingsPanelPopover.hide();
         this.modelValue = widgetAction;

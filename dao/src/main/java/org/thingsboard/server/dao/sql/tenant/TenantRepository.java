@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,6 @@ import org.thingsboard.server.dao.model.sql.TenantInfoEntity;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Created by Valerii Sosliuk on 4/30/2017.
- */
 public interface TenantRepository extends JpaRepository<TenantEntity, UUID> {
 
     @Query("SELECT new org.thingsboard.server.dao.model.sql.TenantInfoEntity(t, p.name) " +
@@ -48,7 +45,7 @@ public interface TenantRepository extends JpaRepository<TenantEntity, UUID> {
             "LEFT JOIN TenantProfileEntity p on p.id = t.tenantProfileId " +
             "WHERE (:textSearch IS NULL OR ilike(t.title, CONCAT('%', :textSearch, '%')) = true)")
     Page<TenantInfoEntity> findTenantInfosNextPage(@Param("textSearch") String textSearch,
-                                                          Pageable pageable);
+                                                   Pageable pageable);
 
     @Query("SELECT t.id FROM TenantEntity t")
     Page<UUID> findTenantsIds(Pageable pageable);
@@ -59,4 +56,9 @@ public interface TenantRepository extends JpaRepository<TenantEntity, UUID> {
     @Query("SELECT new org.thingsboard.server.common.data.edqs.fields.TenantFields(t.id, t.createdTime, t.title, t.version," +
             "t.additionalInfo, t.country, t.state, t.city, t.address, t.address2, t.zip, t.phone, t.email, t.region) FROM TenantEntity t WHERE t.id > :id ORDER BY t.id")
     List<TenantFields> findNextBatch(@Param("id") UUID id, Limit limit);
+
+    TenantEntity findFirstByTitle(String name);
+
+    List<TenantEntity> findTenantsByIdIn(List<UUID> tenantIds);
+
 }

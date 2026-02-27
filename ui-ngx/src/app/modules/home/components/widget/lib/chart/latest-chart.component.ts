@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -49,10 +49,11 @@ export interface LatestChartComponentCallbacks {
 }
 
 @Component({
-  selector: 'tb-latest-chart',
-  templateUrl: './latest-chart.component.html',
-  styleUrls: ['./latest-chart.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'tb-latest-chart',
+    templateUrl: './latest-chart.component.html',
+    styleUrls: ['./latest-chart.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class LatestChartComponent implements OnInit, OnDestroy, AfterViewInit {
 
@@ -67,9 +68,6 @@ export class LatestChartComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @Input()
   ctx: WidgetContext;
-
-  @Input()
-  widgetTitlePanel: TemplateRef<any>;
 
   @Input()
   callbacks: LatestChartComponentCallbacks;
@@ -98,9 +96,9 @@ export class LatestChartComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private latestChart: TbLatestChart<LatestChartSettings>;
 
-  constructor(private imagePipe: ImagePipe,
+  constructor(public widgetComponent: WidgetComponent,
+              private imagePipe: ImagePipe,
               private sanitizer: DomSanitizer,
-              private widgetComponent: WidgetComponent,
               private renderer: Renderer2,
               private translate: TranslateService,
               private cd: ChangeDetectorRef) {
@@ -184,17 +182,13 @@ export class LatestChartComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private onResize() {
     if (this.legendHorizontal) {
-      this.renderer.setStyle(this.chartShape.nativeElement, 'max-width', null);
       this.renderer.setStyle(this.chartShape.nativeElement, 'min-width', null);
-      this.renderer.setStyle(this.chartLegend.nativeElement, 'flex', null);
     }
     const shapeWidth = this.chartShape.nativeElement.getBoundingClientRect().width;
     const shapeHeight = this.chartShape.nativeElement.getBoundingClientRect().height;
     const size = Math.min(shapeWidth, shapeHeight);
     if (this.legendHorizontal) {
-      this.renderer.setStyle(this.chartShape.nativeElement, 'max-width', `${size}px`);
       this.renderer.setStyle(this.chartShape.nativeElement, 'min-width', `${size}px`);
-      this.renderer.setStyle(this.chartLegend.nativeElement, 'flex', '1');
     }
   }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * Created by Valerii Sosliuk on 5/21/2017.
- */
 public interface AlarmRepository extends JpaRepository<AlarmEntity, UUID> {
 
     @Query("SELECT a FROM AlarmEntity a WHERE a.originatorId = :originatorId AND a.type = :alarmType ORDER BY a.startTs DESC")
@@ -101,10 +98,8 @@ public interface AlarmRepository extends JpaRepository<AlarmEntity, UUID> {
             "AND ea.entityType = :affectedEntityType " +
             "AND (:startTime IS NULL OR (a.createdTime >= :startTime AND ea.createdTime >= :startTime)) " +
             "AND (:endTime IS NULL OR (a.createdTime <= :endTime AND ea.createdTime <= :endTime)) " +
-            "AND ((:#{#alarmTypes == null} = true) OR a.type IN (:alarmTypes)) " + //HHH-15968
-            "AND ((:#{#alarmSeverities == null} = true) OR a.severity IN (:alarmSeverities)) " + //HHH-15968
-//            "AND ((:alarmTypes) IS NULL OR a.type IN (:alarmTypes)) " +
-//            "AND ((:alarmSeverities) IS NULL OR a.severity IN (:alarmSeverities)) " +
+            "AND ((:alarmTypes) IS NULL OR a.type IN (:alarmTypes)) " +
+            "AND ((:alarmSeverities) IS NULL OR a.severity IN (:alarmSeverities)) " +
             "AND ((:clearFilterEnabled) = FALSE OR a.cleared = :clearFilter) " +
             "AND ((:ackFilterEnabled) = FALSE OR a.acknowledged = :ackFilter) " +
             "AND (:assigneeId IS NULL OR a.assigneeId = :assigneeId) " +
@@ -122,10 +117,8 @@ public interface AlarmRepository extends JpaRepository<AlarmEntity, UUID> {
                     "AND ea.entityType = :affectedEntityType " +
                     "AND (:startTime IS NULL OR (a.createdTime >= :startTime AND ea.createdTime >= :startTime)) " +
                     "AND (:endTime IS NULL OR (a.createdTime <= :endTime AND ea.createdTime <= :endTime)) " +
-                    "AND ((:#{#alarmTypes == null} = true) OR a.type IN (:alarmTypes)) " + //HHH-15968
-                    "AND ((:#{#alarmSeverities == null} = true) OR a.severity IN (:alarmSeverities)) " + //HHH-15968
-//                    "AND ((:alarmTypes) IS NULL OR a.type IN (:alarmTypes)) " +
-//                    "AND ((:alarmSeverities) IS NULL OR a.severity IN (:alarmSeverities)) " +
+                    "AND ((:alarmTypes) IS NULL OR a.type IN (:alarmTypes)) " +
+                    "AND ((:alarmSeverities) IS NULL OR a.severity IN (:alarmSeverities)) " +
                     "AND ((:clearFilterEnabled) = FALSE OR a.cleared = :clearFilter) " +
                     "AND ((:ackFilterEnabled) = FALSE OR a.acknowledged = :ackFilter) " +
                     "AND (:assigneeId IS NULL OR a.assigneeId = :assigneeId) " +
@@ -186,10 +179,8 @@ public interface AlarmRepository extends JpaRepository<AlarmEntity, UUID> {
             "WHERE a.tenantId = :tenantId " +
             "AND (:startTime IS NULL OR a.createdTime >= :startTime) " +
             "AND (:endTime IS NULL OR a.createdTime <= :endTime) " +
-            "AND ((:#{#alarmTypes == null} = true) OR a.type IN (:alarmTypes)) " + //HHH-15968
-            "AND ((:#{#alarmSeverities == null} = true) OR a.severity IN (:alarmSeverities)) " + //HHH-15968
-//            "AND ((:alarmTypes) IS NULL OR a.type IN (:alarmTypes)) " +
-//            "AND ((:alarmSeverities) IS NULL OR a.severity IN (:alarmSeverities)) " +
+            "AND ((:alarmTypes) IS NULL OR a.type IN (:alarmTypes)) " +
+            "AND ((:alarmSeverities) IS NULL OR a.severity IN (:alarmSeverities)) " +
             "AND ((:clearFilterEnabled) = FALSE OR a.cleared = :clearFilter) " +
             "AND ((:ackFilterEnabled) = FALSE OR a.acknowledged = :ackFilter) " +
             "AND (:assigneeId IS NULL OR a.assigneeId = :assigneeId) " +
@@ -202,10 +193,8 @@ public interface AlarmRepository extends JpaRepository<AlarmEntity, UUID> {
                     "WHERE a.tenantId = :tenantId " +
                     "AND (:startTime IS NULL OR a.createdTime >= :startTime) " +
                     "AND (:endTime IS NULL OR a.createdTime <= :endTime) " +
-                    "AND ((:#{#alarmTypes == null} = true) OR a.type IN (:alarmTypes)) " + //HHH-15968
-                    "AND ((:#{#alarmSeverities == null} = true) OR a.severity IN (:alarmSeverities)) " + //HHH-15968
-//                    "AND ((:alarmTypes) IS NULL OR a.type IN (:alarmTypes)) " +
-//                    "AND ((:alarmSeverities) IS NULL OR a.severity IN (:alarmSeverities)) " +
+                    "AND ((:alarmTypes) IS NULL OR a.type IN (:alarmTypes)) " +
+                    "AND ((:alarmSeverities) IS NULL OR a.severity IN (:alarmSeverities)) " +
                     "AND ((:clearFilterEnabled) = FALSE OR a.cleared = :clearFilter) " +
                     "AND ((:ackFilterEnabled) = FALSE OR a.acknowledged = :ackFilter) " +
                     "AND (:assigneeId IS NULL OR a.assigneeId = :assigneeId) " +
@@ -266,10 +255,8 @@ public interface AlarmRepository extends JpaRepository<AlarmEntity, UUID> {
             "WHERE a.tenantId = :tenantId AND a.customerId = :customerId " +
             "AND (:startTime IS NULL OR a.createdTime >= :startTime) " +
             "AND (:endTime IS NULL OR a.createdTime <= :endTime) " +
-            "AND ((:#{#alarmTypes == null} = true) OR a.type IN (:alarmTypes)) " + //HHH-15968
-            "AND ((:#{#alarmSeverities == null} = true) OR a.severity IN (:alarmSeverities)) " + //HHH-15968
-//            "AND ((:alarmTypes) IS NULL OR a.type IN (:alarmTypes)) " +
-//            "AND ((:alarmSeverities) IS NULL OR a.severity IN (:alarmSeverities)) " +
+            "AND ((:alarmTypes) IS NULL OR a.type IN (:alarmTypes)) " +
+            "AND ((:alarmSeverities) IS NULL OR a.severity IN (:alarmSeverities)) " +
             "AND ((:clearFilterEnabled) = FALSE OR a.cleared = :clearFilter) " +
             "AND ((:ackFilterEnabled) = FALSE OR a.acknowledged = :ackFilter) " +
             "AND (:assigneeId IS NULL OR a.assigneeId = :assigneeId) " +
@@ -283,10 +270,8 @@ public interface AlarmRepository extends JpaRepository<AlarmEntity, UUID> {
                     "WHERE a.tenantId = :tenantId AND a.customerId = :customerId " +
                     "AND (:startTime IS NULL OR a.createdTime >= :startTime) " +
                     "AND (:endTime IS NULL OR a.createdTime <= :endTime) " +
-                    "AND ((:#{#alarmTypes == null} = true) OR a.type IN (:alarmTypes)) " + //HHH-15968
-                    "AND ((:#{#alarmSeverities == null} = true) OR a.severity IN (:alarmSeverities)) " + //HHH-15968
-//                    "AND ((:alarmTypes) IS NULL OR a.type IN (:alarmTypes)) " +
-//                    "AND ((:alarmSeverities) IS NULL OR a.severity IN (:alarmSeverities)) " +
+                    "AND ((:alarmTypes) IS NULL OR a.type IN (:alarmTypes)) " +
+                    "AND ((:alarmSeverities) IS NULL OR a.severity IN (:alarmSeverities)) " +
                     "AND ((:clearFilterEnabled) = FALSE OR a.cleared = :clearFilter) " +
                     "AND ((:ackFilterEnabled) = FALSE OR a.acknowledged = :ackFilter) " +
                     "AND (:assigneeId IS NULL OR a.assigneeId = :assigneeId) " +

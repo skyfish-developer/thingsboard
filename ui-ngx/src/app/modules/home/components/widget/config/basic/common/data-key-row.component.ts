@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -76,17 +76,18 @@ export const dataKeyRowValidator = (control: AbstractControl): ValidationErrors 
 };
 
 @Component({
-  selector: 'tb-data-key-row',
-  templateUrl: './data-key-row.component.html',
-  styleUrls: ['./data-key-row.component.scss', '../../../lib/settings/common/key/data-keys.component.scss'],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => DataKeyRowComponent),
-      multi: true
-    }
-  ],
-  encapsulation: ViewEncapsulation.None
+    selector: 'tb-data-key-row',
+    templateUrl: './data-key-row.component.html',
+    styleUrls: ['./data-key-row.component.scss', '../../../lib/settings/common/key/data-keys.component.scss'],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => DataKeyRowComponent),
+            multi: true
+        }
+    ],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class DataKeyRowComponent implements ControlValueAccessor, OnInit, OnChanges {
 
@@ -225,6 +226,10 @@ export class DataKeyRowComponent implements ControlValueAccessor, OnInit, OnChan
     return this.hasAdditionalLatestDataKeys && this.keyRowFormGroup.get('latest').value === true;
   }
 
+  get supportsUnitConversion(): boolean {
+    return this.widgetConfigComponent.modelValue?.typeParameters?.supportsUnitConversion ?? false;
+  }
+
   private propagateChange = (_val: any) => {};
 
   constructor(private fb: UntypedFormBuilder,
@@ -337,7 +342,8 @@ export class DataKeyRowComponent implements ControlValueAccessor, OnInit, OnChan
           hideDataKeyLabel: this.hideDataKeyLabel,
           hideDataKeyColor: this.hideDataKeyColor,
           hideDataKeyUnits: this.hideDataKeyUnits || !this.displayUnitsOrDigits,
-          hideDataKeyDecimals: this.hideDataKeyDecimals || !this.displayUnitsOrDigits
+          hideDataKeyDecimals: this.hideDataKeyDecimals || !this.displayUnitsOrDigits,
+          supportsUnitConversion: this.supportsUnitConversion
         }
       }).afterClosed().subscribe((updatedDataKey) => {
       if (updatedDataKey) {

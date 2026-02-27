@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -22,9 +22,10 @@ import { AppState } from '@core/core.state';
 import { buildPageStepSizeValues } from '@home/components/widget/lib/table-widget.models';
 
 @Component({
-  selector: 'tb-alarms-table-widget-settings',
-  templateUrl: './alarms-table-widget-settings.component.html',
-  styleUrls: ['./../widget-settings.scss']
+    selector: 'tb-alarms-table-widget-settings',
+    templateUrl: './alarms-table-widget-settings.component.html',
+    styleUrls: ['./../widget-settings.scss'],
+    standalone: false
 })
 export class AlarmsTableWidgetSettingsComponent extends WidgetSettingsComponent {
 
@@ -66,6 +67,12 @@ export class AlarmsTableWidgetSettingsComponent extends WidgetSettingsComponent 
     };
   }
 
+  protected prepareInputSettings(settings: WidgetSettings): WidgetSettings {
+    settings.pageStepIncrement = settings.pageStepIncrement ?? settings.defaultPageSize;
+    this.pageStepSizeValues = buildPageStepSizeValues(settings.pageStepCount, settings.pageStepIncrement);
+    return settings;
+  }
+
   protected onSettingsSet(settings: WidgetSettings) {
     this.alarmsTableWidgetSettingsForm = this.fb.group({
       alarmsTitle: [settings.alarmsTitle, []],
@@ -86,14 +93,11 @@ export class AlarmsTableWidgetSettingsComponent extends WidgetSettingsComponent 
       defaultPageSize: [settings.defaultPageSize, [Validators.min(1)]],
       pageStepCount: [settings.pageStepCount ?? 3, [Validators.min(1), Validators.max(100),
         Validators.required, Validators.pattern(/^\d*$/)]],
-      pageStepIncrement: [settings.pageStepIncrement ?? settings.defaultPageSize,
-        [Validators.min(1), Validators.required, Validators.pattern(/^\d*$/)]],
+      pageStepIncrement: [settings.pageStepIncrement, [Validators.min(1), Validators.required, Validators.pattern(/^\d*$/)]],
       defaultSortOrder: [settings.defaultSortOrder, []],
       useRowStyleFunction: [settings.useRowStyleFunction, []],
       rowStyleFunction: [settings.rowStyleFunction, [Validators.required]]
     });
-    this.pageStepSizeValues = buildPageStepSizeValues(this.alarmsTableWidgetSettingsForm.get('pageStepCount').value,
-      this.alarmsTableWidgetSettingsForm.get('pageStepIncrement').value);
   }
 
   protected validatorTriggers(): string[] {

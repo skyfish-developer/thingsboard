@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -37,11 +37,12 @@ import { Datasource } from '@shared/models/widget.models';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'tb-color-settings-panel',
-  templateUrl: './color-settings-panel.component.html',
-  providers: [],
-  styleUrls: ['./color-settings-panel.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'tb-color-settings-panel',
+    templateUrl: './color-settings-panel.component.html',
+    providers: [],
+    styleUrls: ['./color-settings-panel.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class ColorSettingsPanelComponent extends PageComponent implements OnInit {
 
@@ -110,8 +111,28 @@ export class ColorSettingsPanelComponent extends PageComponent implements OnInit
     this.colorSettingsFormGroup.get('type').valueChanges.pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(() => {
+      this.updateValidators();
       setTimeout(() => {this.popover?.updatePosition();}, 0);
     });
+    this.updateValidators();
+  }
+
+  updateValidators() {
+    const type: ColorType = this.colorSettingsFormGroup.get('type').value;
+    this.colorSettingsFormGroup.get('gradient').disable({emitEvent: false});
+    this.colorSettingsFormGroup.get('rangeList').disable({emitEvent: false});
+    this.colorSettingsFormGroup.get('colorFunction').disable({emitEvent: false});
+    switch (type) {
+      case ColorType.gradient:
+        this.colorSettingsFormGroup.get('gradient').enable({emitEvent: false});
+        break;
+      case ColorType.range:
+        this.colorSettingsFormGroup.get('rangeList').enable({emitEvent: false});
+        break;
+      case ColorType.function:
+        this.colorSettingsFormGroup.get('colorFunction').enable({emitEvent: false});
+        break;
+    }
   }
 
   copyColorSettings(comp: ColorSettingsComponent) {
@@ -131,7 +152,7 @@ export class ColorSettingsPanelComponent extends PageComponent implements OnInit
   }
 
   applyColorSettings() {
-    const colorSettings = this.colorSettingsFormGroup.value;
+    const colorSettings: ColorSettings = this.colorSettingsFormGroup.getRawValue();
     this.colorSettingsApplied.emit(colorSettings);
   }
 

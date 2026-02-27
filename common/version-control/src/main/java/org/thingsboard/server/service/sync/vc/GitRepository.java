@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.eclipse.jgit.diff.HistogramDiff;
 import org.eclipse.jgit.diff.RawText;
 import org.eclipse.jgit.diff.RawTextComparator;
 import org.eclipse.jgit.errors.LargeObjectException;
+import org.eclipse.jgit.errors.RepositoryNotFoundException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
@@ -147,22 +148,31 @@ public class GitRepository {
     }
 
     public static GitRepository openOrClone(Path directory, RepositorySettings settings, boolean fetch) throws IOException, GitAPIException {
-        GitRepository repository;
         if (GitRepository.exists(directory.toString())) {
-            repository = GitRepository.open(directory.toFile(), settings);
-            if (fetch) {
-                repository.fetch();
-            }
-        } else {
-            FileUtils.deleteDirectory(directory.toFile());
-            Files.createDirectories(directory);
-            if (settings.isLocalOnly()) {
-                repository = GitRepository.create(settings, directory.toFile());
-            } else {
-                repository = GitRepository.clone(settings, directory.toFile());
+            try {
+                GitRepository repository = GitRepository.open(directory.toFile(), settings);
+                if (fetch) {
+                    repository.fetch();
+                }
+                return repository;
+            } catch (RepositoryNotFoundException e) {
+                log.warn("{} not a git repository, reinitializing", directory);
+            } catch (org.eclipse.jgit.errors.TransportException | org.eclipse.jgit.api.errors.TransportException e) {
+                if (StringUtils.containsIgnoreCase(e.getMessage(), "missing commit")) {
+                    log.warn("Couldn't fetch {} due to {}, reinitializing", directory, e.getMessage());
+                } else {
+                    throw e;
+                }
             }
         }
-        return repository;
+
+        FileUtils.deleteDirectory(directory.toFile());
+        Files.createDirectories(directory);
+        if (settings.isLocalOnly()) {
+            return GitRepository.create(settings, directory.toFile());
+        } else {
+            return GitRepository.clone(settings, directory.toFile());
+        }
     }
 
     public static void test(RepositorySettings settings, File directory) throws Exception {
@@ -267,13 +277,17 @@ public class GitRepository {
         return listFilesAtCommit(commitId, path, -1).stream().map(RepoFile::path).toList();
     }
 
-    @SneakyThrows
     public List<RepoFile> listFilesAtCommit(String commitId, String path, int depth) {
-        log.debug("Executing listFilesAtCommit [{}][{}][{}]", settings.getRepositoryUri(), commitId, path);
+        RevCommit commit = resolveCommit(commitId);
+        return listFilesAtCommit(commit, path, depth);
+    }
+
+    @SneakyThrows
+    public List<RepoFile> listFilesAtCommit(RevCommit commit, String path, int depth) {
+        log.debug("Executing listFilesAtCommit [{}][{}][{}]", settings.getRepositoryUri(), commit, path);
         List<RepoFile> files = new ArrayList<>();
-        RevCommit revCommit = resolveCommit(commitId);
         try (TreeWalk treeWalk = new TreeWalk(git.getRepository())) {
-            treeWalk.reset(revCommit.getTree().getId());
+            treeWalk.reset(commit.getTree().getId());
             if (StringUtils.isNotEmpty(path)) {
                 treeWalk.setFilter(PathFilter.create(path));
             }
@@ -291,11 +305,15 @@ public class GitRepository {
         return files;
     }
 
-    @SneakyThrows
     public byte[] getFileContentAtCommit(String file, String commitId) {
-        log.debug("Executing getFileContentAtCommit [{}][{}][{}]", settings.getRepositoryUri(), commitId, file);
-        RevCommit revCommit = resolveCommit(commitId);
-        try (TreeWalk treeWalk = TreeWalk.forPath(git.getRepository(), file, revCommit.getTree())) {
+        RevCommit commit = resolveCommit(commitId);
+        return getFileContentAtCommit(file, commit);
+    }
+
+    @SneakyThrows
+    public byte[] getFileContentAtCommit(String file, RevCommit commit) {
+        log.debug("Executing getFileContentAtCommit [{}][{}][{}]", settings.getRepositoryUri(), commit, file);
+        try (TreeWalk treeWalk = TreeWalk.forPath(git.getRepository(), file, commit.getTree())) {
             if (treeWalk == null) {
                 throw new IllegalArgumentException("File not found");
             }
@@ -363,9 +381,9 @@ public class GitRepository {
             for (RemoteRefUpdate update : pushResult.getRemoteUpdates()) {
                 RemoteRefUpdate.Status status = update.getStatus();
                 if (status == REJECTED_NONFASTFORWARD || status == REJECTED_NODELETE ||
-                        status == REJECTED_REMOTE_CHANGED || status == REJECTED_OTHER_REASON) {
+                    status == REJECTED_REMOTE_CHANGED || status == REJECTED_OTHER_REASON) {
                     throw new RuntimeException("Remote repository answered with error: " +
-                            Optional.ofNullable(update.getMessage()).orElseGet(status::name));
+                                               Optional.ofNullable(update.getMessage()).orElseGet(status::name));
                 }
             }
         });
@@ -440,7 +458,8 @@ public class GitRepository {
                 revCommit.getFullMessage(), revCommit.getAuthorIdent().getName(), revCommit.getAuthorIdent().getEmailAddress());
     }
 
-    private RevCommit resolveCommit(String id) throws IOException {
+    @SneakyThrows
+    public RevCommit resolveCommit(String id) {
         return git.getRepository().parseCommit(resolve(id));
     }
 
@@ -471,8 +490,8 @@ public class GitRepository {
     private static final Function<PageLink, Comparator<RevCommit>> revCommitComparatorFunction = pageLink -> {
         SortOrder sortOrder = pageLink.getSortOrder();
         if (sortOrder != null
-                && sortOrder.getProperty().equals("timestamp")
-                && SortOrder.Direction.ASC.equals(sortOrder.getDirection())) {
+            && sortOrder.getProperty().equals("timestamp")
+            && SortOrder.Direction.ASC.equals(sortOrder.getDirection())) {
             return Comparator.comparingInt(RevCommit::getCommitTime);
         }
         return null;

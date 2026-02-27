@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -419,10 +420,11 @@ public class HashPartitionServiceTest {
     }
 
     private HashPartitionService createPartitionService() {
-        HashPartitionService partitionService = new HashPartitionService(serviceInfoProvider,
-                routingInfoService,
+        HashPartitionService partitionService = new HashPartitionService(
                 applicationEventPublisher,
-                queueRoutingInfoService,
+                serviceInfoProvider,
+                Optional.of(routingInfoService),
+                Optional.of(queueRoutingInfoService),
                 topicService);
         ReflectionTestUtils.setField(partitionService, "coreTopic", "tb.core");
         ReflectionTestUtils.setField(partitionService, "corePartitions", 10);
@@ -434,6 +436,7 @@ public class HashPartitionServiceTest {
         ReflectionTestUtils.setField(partitionService, "edgeTopic", "tb.edge");
         ReflectionTestUtils.setField(partitionService, "edgePartitions", 10);
         ReflectionTestUtils.setField(partitionService, "edqsPartitions", 12);
+        ReflectionTestUtils.setField(partitionService, "defaultTasksPartitions", 12);
         partitionService.init();
         partitionService.partitionsInit();
         return partitionService;

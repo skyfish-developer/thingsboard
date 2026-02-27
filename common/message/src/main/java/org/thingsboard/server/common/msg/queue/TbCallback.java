@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.thingsboard.server.common.msg.queue;
 
+import com.google.common.util.concurrent.SettableFuture;
 import org.thingsboard.server.common.data.id.EntityId;
 
 import java.util.UUID;
@@ -34,12 +35,26 @@ public interface TbCallback {
         }
     };
 
-    default UUID getId(){
+    default UUID getId() {
         return EntityId.NULL_UUID;
     }
 
     void onSuccess();
 
     void onFailure(Throwable t);
+
+    static <V> TbCallback wrap(SettableFuture<V> future) {
+        return new TbCallback() {
+            @Override
+            public void onSuccess() {
+                future.set(null);
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                future.setException(t);
+            }
+        };
+    }
 
 }

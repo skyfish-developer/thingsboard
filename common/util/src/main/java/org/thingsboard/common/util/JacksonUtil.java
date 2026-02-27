@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,9 +37,10 @@ import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Contract;
+import org.thingsboard.server.common.data.Views;
 import org.thingsboard.server.common.data.kv.DataType;
 import org.thingsboard.server.common.data.kv.KvEntry;
-import org.thingsboard.server.common.data.Views;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,9 +62,6 @@ import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
-/**
- * Created by Valerii Sosliuk on 5/12/2017.
- */
 @Slf4j
 public class JacksonUtil {
 
@@ -84,6 +82,12 @@ public class JacksonUtil {
     public static final ObjectMapper IGNORE_UNKNOWN_PROPERTIES_JSON_MAPPER = JsonMapper.builder()
             .addModule(new Jdk8Module())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .build();
+    public static final ObjectMapper CANONICAL_JSON_MAPPER = JsonMapper.builder()
+            .addModule(new Jdk8Module())
+            .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
+            .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
+            .serializationInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
             .build();
 
     public static ObjectMapper getObjectMapperWithJavaTimeModule() {
@@ -109,11 +113,17 @@ public class JacksonUtil {
         }
     }
 
+    @Contract("null, _ -> null") // so that IDE doesn't show NPE warning when input is not null
     public static <T> T fromString(String string, Class<T> clazz) {
+        return fromString(string, clazz, "The given string value cannot be transformed to Json object: " + string);
+    }
+
+    @Contract("null, _, _ -> null") // so that IDE doesn't show NPE warning when input is not null
+    public static <T> T fromString(String string, Class<T> clazz, String errorMsg) {
         try {
             return string != null ? OBJECT_MAPPER.readValue(string, clazz) : null;
         } catch (IOException e) {
-            throw new IllegalArgumentException("The given string value cannot be transformed to Json object: " + string, e);
+            throw new IllegalArgumentException(errorMsg, e);
         }
     }
 
@@ -206,6 +216,23 @@ public class JacksonUtil {
             log.trace("Trimming double quotes. Before trim: [{}], after trim: [{}]", dataBefore, data);
         }
         return data;
+    }
+
+    public static String toCanonicalString(Object value) {
+        try {
+            if (value == null) {
+                return null;
+            }
+
+            if (value instanceof JsonNode) {
+                Object pojo = CANONICAL_JSON_MAPPER.convertValue(value, Object.class);
+                return CANONICAL_JSON_MAPPER.writeValueAsString(pojo);
+            }
+
+            return CANONICAL_JSON_MAPPER.writeValueAsString(value);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("The given Json object value cannot be transformed to a canonical String: " + value, e);
+        }
     }
 
     public static <T> T treeToValue(JsonNode node, Class<T> clazz) {

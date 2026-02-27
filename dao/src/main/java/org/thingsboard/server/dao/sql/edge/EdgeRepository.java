@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,11 @@ public interface EdgeRepository extends JpaRepository<EdgeEntity, UUID> {
             "LEFT JOIN CustomerEntity c on c.id = d.customerId " +
             "WHERE d.id = :edgeId")
     EdgeInfoEntity findEdgeInfoById(@Param("edgeId") UUID edgeId);
+
+    @Query(value = "SELECT * FROM edge_active_attribute_view edge_active",
+            countQuery = "SELECT count(*) FROM edge_active_attribute_view",
+            nativeQuery = true)
+    Page<EdgeEntity> findActiveEdges(Pageable pageable);
 
     @Query("SELECT d.id FROM EdgeEntity d WHERE d.tenantId = :tenantId " +
             "AND (:textSearch IS NULL OR ilike(d.name, CONCAT('%', :textSearch, '%')) = true)")
@@ -159,4 +164,5 @@ public interface EdgeRepository extends JpaRepository<EdgeEntity, UUID> {
     @Query("SELECT new org.thingsboard.server.common.data.edqs.fields.EdgeFields(e.id, e.createdTime, e.tenantId, e.customerId," +
             "e.name, e.version, e.type, e.label, e.additionalInfo) FROM EdgeEntity e WHERE e.id > :id ORDER BY e.id")
     List<EdgeFields> findNextBatch(@Param("id") UUID id, Limit limit);
+
 }

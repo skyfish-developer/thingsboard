@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -1245,6 +1245,56 @@ const tbelEditorCompletions:TbEditorCompletions = {
       type: 'boolean'
     }
   },
+  isInsidePolygon: {
+    meta: 'function',
+    description: 'Checks if a given point is inside a polygon.',
+    args: [
+      {
+        name: 'latitude',
+        description: 'The latitude of the point',
+        type: 'number'
+      },
+      {
+        name: 'longitude',
+        description: 'The longitude of the point',
+        type: 'number'
+      },
+      {
+        name: 'perimeter',
+        description: 'The polygon perimeter represented as a string',
+        type: 'string'
+      }
+    ],
+    return: {
+      description: 'True if the point is inside the polygon, false otherwise.',
+      type: 'boolean'
+    }
+  },
+  isInsideCircle: {
+    meta: 'function',
+    description: 'Checks if a given point is inside a circular area.',
+    args: [
+      {
+        name: 'latitude',
+        description: 'The latitude of the point',
+        type: 'number'
+      },
+      {
+        name: 'longitude',
+        description: 'The longitude of the point',
+        type: 'number'
+      },
+      {
+        name: 'perimeter',
+        description: 'A string representation of the circle, containing center coordinates and radius',
+        type: 'string'
+      }
+    ],
+    return: {
+      description: 'True if the point is inside the circle, false otherwise.',
+      type: 'boolean'
+    }
+  }
 }
 
 export const tbelUtilsAutocompletes = new TbEditorCompleter(tbelEditorCompletions);

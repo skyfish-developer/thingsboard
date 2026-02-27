@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -51,7 +51,8 @@ import {
   ChangeDetectorRef,
   InjectionToken,
   Injector,
-  NgZone, Renderer2,
+  NgZone,
+  Renderer2,
   TemplateRef,
   Type,
   ViewContainerRef
@@ -115,6 +116,9 @@ import { DataKeySettingsFunction } from '@home/components/widget/lib/settings/co
 import { UtilsService } from '@core/services/utils.service';
 import { CompiledTbFunction } from '@shared/models/js-function.models';
 import { FormProperty } from '@shared/models/dynamic-form.models';
+import { ExportableEntity } from '@shared/models/base-data';
+import { TbUnit } from '@shared/models/unit.models';
+import { UnitService } from '@core/services/unit.service';
 
 export interface IWidgetAction {
   name: string;
@@ -132,7 +136,7 @@ export interface WidgetHeaderAction extends IWidgetAction {
   buttonColor?: string;
   buttonFillColor?: string;
   buttonBorderColor?: string;
-  customButtonStyle?: string;
+  customButtonStyle?: {[key: string]: string};
   useShowWidgetHeaderActionFunction: boolean;
   showWidgetHeaderActionFunction: CompiledTbFunction<ShowWidgetHeaderActionFunction>;
 }
@@ -143,6 +147,7 @@ export interface WidgetAction extends IWidgetAction {
 
 export interface IDashboardWidget {
   updateWidgetParams(): void;
+  updateParamsFromData(detectChanges?: boolean): void;
 }
 
 export class WidgetContext {
@@ -173,7 +178,7 @@ export class WidgetContext {
     return this.widget.config.settings;
   }
 
-  get units(): string {
+  get units(): TbUnit {
     return this.widget.config.units || '';
   }
 
@@ -222,6 +227,7 @@ export class WidgetContext {
   userSettingsService: UserSettingsService;
   utilsService: UtilsService;
   telemetryWsService: TelemetryWebsocketService;
+  unitService: UnitService;
   telemetrySubscribers?: Array<TelemetrySubscriber | SharedTelemetrySubscriber>;
   date: DatePipe;
   imagePipe: ImagePipe;
@@ -302,6 +308,8 @@ export class WidgetContext {
   widgetNamespace?: string;
   subscriptionApi?: WidgetSubscriptionApi;
 
+  widgetCssClass?: string;
+
   actionsApi?: WidgetActionsApi;
   activeEntityInfo?: SubscriptionEntityInfo;
 
@@ -312,6 +320,7 @@ export class WidgetContext {
   timeWindow?: WidgetTimewindow;
 
   embedTitlePanel?: boolean;
+  embedActionsPanel?: boolean;
   overflowVisible?: boolean;
 
   hideTitlePanel = false;
@@ -472,6 +481,10 @@ export class WidgetContext {
     }
   }
 
+  updateParamsFromData(detectChanges = false) {
+    this.dashboardWidget.updateParamsFromData(detectChanges);
+  }
+
   updateAliases(aliasIds?: Array<string>) {
     this.aliasController.updateAliases(aliasIds);
   }
@@ -542,7 +555,7 @@ export class LabelVariablePattern {
         const entityInfo = this.ctx.defaultSubscription.getFirstEntityInfo();
         label = createLabelFromSubscriptionEntityInfo(entityInfo, label);
       } else {
-        const datasource = this.ctx.defaultSubscription?.firstDatasource;
+        const datasource = this.ctx.defaultSubscription?.firstDatasource ?? (this.ctx as any).mapInstance?.getData()[0];
         label = createLabelFromDatasource(datasource, label);
       }
     }
@@ -572,7 +585,7 @@ export interface IDynamicWidgetComponent {
   [key: string]: any;
 }
 
-export interface WidgetInfo extends WidgetTypeDescriptor, WidgetControllerDescriptor {
+export interface WidgetInfo extends WidgetTypeDescriptor, WidgetControllerDescriptor, ExportableEntity<WidgetTypeId> {
   widgetName: string;
   fullFqn: string;
   deprecated: boolean;
@@ -680,6 +693,7 @@ export const toWidgetInfo = (widgetTypeEntity: WidgetType): WidgetInfo => ({
   fullFqn: fullWidgetTypeFqn(widgetTypeEntity),
   deprecated: widgetTypeEntity.deprecated,
   scada: widgetTypeEntity.scada,
+  externalId: widgetTypeEntity.externalId,
   type: widgetTypeEntity.descriptor.type,
   sizeX: widgetTypeEntity.descriptor.sizeX,
   sizeY: widgetTypeEntity.descriptor.sizeY,
@@ -735,6 +749,7 @@ export const toWidgetType = (widgetInfo: WidgetInfo, id: WidgetTypeId, tenantId:
     name: widgetInfo.widgetName,
     deprecated: widgetInfo.deprecated,
     scada: widgetInfo.scada,
+    externalId: widgetInfo.externalId,
     descriptor
   };
 };

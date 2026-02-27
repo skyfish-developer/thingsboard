@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -54,10 +54,11 @@ import { select, Store } from '@ngrx/store';
 import { AppState } from '@core/core.state';
 
 @Component({
-  selector: 'tb-unread-notification-widget',
-  templateUrl: './unread-notification-widget.component.html',
-  styleUrls: ['unread-notification-widget.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'tb-unread-notification-widget',
+    templateUrl: './unread-notification-widget.component.html',
+    styleUrls: ['unread-notification-widget.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class UnreadNotificationWidgetComponent implements OnInit, OnDestroy {
 
@@ -237,7 +238,7 @@ export class UnreadNotificationWidgetComponent implements OnInit, OnDestroy {
     if ($event) {
       $event.stopPropagation();
     }
-    const target = $event.target || $event.srcElement || $event.currentTarget;
+    const target = $event.target || $event.currentTarget;
     const config = new OverlayConfig({
       panelClass: 'tb-panel-container',
       backdropClass: 'cdk-overlay-transparent-backdrop',

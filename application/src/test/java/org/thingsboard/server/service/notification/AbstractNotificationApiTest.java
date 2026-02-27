@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.util.Pair;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.thingsboard.rule.engine.api.MailService;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.thingsboard.rule.engine.api.notification.SlackService;
 import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.id.NotificationRequestId;
@@ -70,10 +68,8 @@ public abstract class AbstractNotificationApiTest extends AbstractControllerTest
     protected NotificationApiWsClient wsClient;
     protected NotificationApiWsClient otherWsClient;
 
-    @MockBean
+    @MockitoBean
     protected SlackService slackService;
-    @Autowired
-    protected MailService mailService;
 
     @Autowired
     protected NotificationRuleService notificationRuleService;
@@ -89,8 +85,6 @@ public abstract class AbstractNotificationApiTest extends AbstractControllerTest
     protected SqlPartitioningRepository partitioningRepository;
     @Autowired
     protected DefaultNotifications defaultNotifications;
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
     public static final String DEFAULT_NOTIFICATION_SUBJECT = "Just a test";
     public static final NotificationType DEFAULT_NOTIFICATION_TYPE = NotificationType.GENERAL;
@@ -101,7 +95,6 @@ public abstract class AbstractNotificationApiTest extends AbstractControllerTest
         notificationRuleService.deleteNotificationRulesByTenantId(TenantId.SYS_TENANT_ID);
         notificationTemplateService.deleteNotificationTemplatesByTenantId(TenantId.SYS_TENANT_ID);
         notificationTargetService.deleteNotificationTargetsByTenantId(TenantId.SYS_TENANT_ID);
-        jdbcTemplate.execute("TRUNCATE TABLE notification");
         partitioningRepository.cleanupPartitionsCache("notification", Long.MAX_VALUE, 0);
         notificationSettingsService.deleteNotificationSettings(TenantId.SYS_TENANT_ID);
     }
@@ -229,4 +222,5 @@ public abstract class AbstractNotificationApiTest extends AbstractControllerTest
     public NotificationApiWsClient getAnotherWsClient() {
         return (NotificationApiWsClient) super.getAnotherWsClient();
     }
+
 }

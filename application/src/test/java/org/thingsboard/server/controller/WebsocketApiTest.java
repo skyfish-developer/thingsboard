@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.thingsboard.rule.engine.api.TimeseriesSaveRequest;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.alarm.Alarm;
 import org.thingsboard.server.common.data.alarm.AlarmSeverity;
+import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.kv.AttributeKvEntry;
@@ -44,6 +45,7 @@ import org.thingsboard.server.common.data.kv.StringDataEntry;
 import org.thingsboard.server.common.data.kv.TsKvEntry;
 import org.thingsboard.server.common.data.page.PageData;
 import org.thingsboard.server.common.data.query.AlarmCountQuery;
+import org.thingsboard.server.common.data.query.AliasEntityId;
 import org.thingsboard.server.common.data.query.DeviceTypeFilter;
 import org.thingsboard.server.common.data.query.EntityCountQuery;
 import org.thingsboard.server.common.data.query.EntityData;
@@ -57,6 +59,7 @@ import org.thingsboard.server.common.data.query.KeyFilter;
 import org.thingsboard.server.common.data.query.NumericFilterPredicate;
 import org.thingsboard.server.common.data.query.SingleEntityFilter;
 import org.thingsboard.server.common.data.query.TsValue;
+import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.dao.service.DaoSqlTest;
 import org.thingsboard.server.service.subscription.SubscriptionErrorCode;
 import org.thingsboard.server.service.subscription.TbAttributeSubscriptionScope;
@@ -68,11 +71,13 @@ import org.thingsboard.server.service.ws.telemetry.cmd.v2.AlarmStatusUpdate;
 import org.thingsboard.server.service.ws.telemetry.cmd.v2.EntityCountCmd;
 import org.thingsboard.server.service.ws.telemetry.cmd.v2.EntityCountUpdate;
 import org.thingsboard.server.service.ws.telemetry.cmd.v2.EntityDataUpdate;
+import org.thingsboard.server.service.ws.telemetry.sub.TelemetrySubscriptionUpdate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -330,7 +335,7 @@ public class WebsocketApiTest extends AbstractControllerTest {
         loginTenantAdmin();
 
         SingleEntityFilter singleEntityFilter = new SingleEntityFilter();
-        singleEntityFilter.setSingleEntity(tenantId);
+        singleEntityFilter.setSingleEntity(AliasEntityId.fromEntityId(tenantId));
         AlarmCountQuery alarmCountQuery = new AlarmCountQuery(singleEntityFilter);
         AlarmCountCmd cmd1 = new AlarmCountCmd(1, alarmCountQuery);
 
@@ -354,7 +359,7 @@ public class WebsocketApiTest extends AbstractControllerTest {
         Assert.assertEquals(1, update.getCount());
 
         // set wrong entity id in filter, check count = 0
-        singleEntityFilter.setSingleEntity(tenantAdminUserId);
+        singleEntityFilter.setSingleEntity(AliasEntityId.fromEntityId(tenantAdminUserId));
         AlarmCountCmd cmd3 = new AlarmCountCmd(2, alarmCountQuery);
 
         getWsClient().send(cmd3);
@@ -476,6 +481,56 @@ public class WebsocketApiTest extends AbstractControllerTest {
     }
 
     @Test
+    public void testAlarmStatusWsCmdForPropagatedAlarms() throws Exception {
+        loginTenantAdmin();
+        Device device = new Device();
+        device.setName("Test device");
+        device.setLabel("Label");
+        device.setType("default");
+        device = doPost("/api/device", device, Device.class);
+
+        Asset asset = new Asset();
+        asset.setName("My asset");
+        asset.setType("default");
+        asset = doPost("/api/asset", asset, Asset.class);
+
+        EntityRelation entityRelation = new EntityRelation(asset.getId(), device.getId(), "CONTAINS");
+        doPost("/api/relation", entityRelation);
+
+        AlarmStatusCmd cmd = new AlarmStatusCmd(1, asset.getId(), null, List.of(AlarmSeverity.CRITICAL));
+        getWsClient().send(cmd);
+
+        AlarmStatusUpdate update = JacksonUtil.fromString(getWsClient().waitForReply(), AlarmStatusUpdate.class);
+        Assert.assertEquals(1, update.getCmdId());
+        Assert.assertFalse(update.isActive());
+
+        //create alarm
+        getWsClient().registerWaitForUpdate();
+
+        Alarm alarm = Alarm.builder()
+                .originator(device.getId())
+                .severity(AlarmSeverity.CRITICAL)
+                .type("test_type")
+                .propagate(true)
+                .build();
+
+        alarm = doPost("/api/alarm", alarm, Alarm.class);
+        Assert.assertNotNull(alarm);
+
+        // check no update for asset
+        String msg = getWsClient().waitForUpdate(TimeUnit.SECONDS.toMillis(1));
+        Assert.assertNull(msg);
+
+        // check device
+        AlarmStatusCmd deviceCmd = new AlarmStatusCmd(2, device.getId(), null, List.of(AlarmSeverity.CRITICAL));
+        getWsClient().send(deviceCmd);
+
+        AlarmStatusUpdate deviceUpdate = JacksonUtil.fromString(getWsClient().waitForReply(), AlarmStatusUpdate.class);
+        Assert.assertEquals(2, deviceUpdate.getCmdId());
+        Assert.assertTrue(deviceUpdate.isActive());
+    }
+
+    @Test
     public void testAlarmStatusWsCmdWithMaxAlarmsCacheSize() throws Exception {
         loginTenantAdmin();
 
@@ -580,6 +635,33 @@ public class WebsocketApiTest extends AbstractControllerTest {
         //Sending duplicate update again
         getWsClient().registerWaitForUpdate();
         sendTelemetry(device, Arrays.asList(dataPoint2));
+        msg = getWsClient().waitForUpdate(TimeUnit.SECONDS.toMillis(1));
+        Assert.assertNull(msg);
+    }
+
+    @Test
+    public void testTimeseriesSubscriptionCmd() throws Exception {
+        long now = System.currentTimeMillis() - 100;
+
+        long lastTs = now - TimeUnit.MINUTES.toMillis(1);
+        TsKvEntry dataPoint1 = new BasicTsKvEntry(lastTs, new LongDataEntry("temperature", 42L));
+        sendTelemetry(device, List.of(dataPoint1));
+
+        JsonNode update = getWsClient().sendTimeseriesCmd(device.getId(), "LATEST_TELEMETRY");
+        JsonNode data = update.get("data");
+        Assert.assertEquals(1, data.size());
+        Assert.assertEquals(JacksonUtil.newArrayNode().add(lastTs).add("42"), data.get("temperature").get(0));
+
+        //Sending update from the past, while latest value has new timestamp;
+        TsKvEntry dataPoint4 = new BasicTsKvEntry(now - TimeUnit.MINUTES.toMillis(5), new LongDataEntry("temperature", 45L));
+        getWsClient().registerWaitForUpdate();
+        sendTelemetry(device, List.of(dataPoint4));
+        String msg = getWsClient().waitForUpdate(TimeUnit.SECONDS.toMillis(1));
+        Assert.assertNull(msg);
+
+        //Sending duplicate update again
+        getWsClient().registerWaitForUpdate();
+        sendTelemetry(device, List.of(dataPoint4));
         msg = getWsClient().waitForUpdate(TimeUnit.SECONDS.toMillis(1));
         Assert.assertNull(msg);
     }
@@ -836,7 +918,7 @@ public class WebsocketApiTest extends AbstractControllerTest {
     public void testAttributesSubscription_sysAdmin() throws Exception {
         loginSysAdmin();
         SingleEntityFilter entityFilter = new SingleEntityFilter();
-        entityFilter.setSingleEntity(tenantId);
+        entityFilter.setSingleEntity(AliasEntityId.fromEntityId(tenantId));
 
         assertThatNoException().as("subscribeForAttributes").isThrownBy(() -> {
             JsonNode update = getWsClient().subscribeForAttributes(tenantId, TbAttributeSubscriptionScope.SERVER_SCOPE.name(), List.of("attr"));

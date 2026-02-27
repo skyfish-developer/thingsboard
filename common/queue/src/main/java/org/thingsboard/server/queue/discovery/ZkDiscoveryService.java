@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -177,6 +177,19 @@ public class ZkDiscoveryService implements DiscoveryService, PathChildrenCacheLi
         }
     }
 
+    @Override
+    public void setReady(boolean ready) {
+        log.debug("Marking current service as {}", ready ? "ready" : "NOT ready");
+        boolean changed = serviceInfoProvider.setReady(ready);
+        if (changed) {
+            try {
+                publishCurrentServer();
+            } catch (Exception e) {
+                log.error("Failed to update server readiness status", e);
+            }
+        }
+    }
+
     private boolean currentServerExists() {
         if (nodePath == null) {
             return false;
@@ -315,7 +328,7 @@ public class ZkDiscoveryService implements DiscoveryService, PathChildrenCacheLi
                 ScheduledFuture<?> task = delayedTasks.remove(serviceId);
                 if (task != null) {
                     if (task.cancel(false)) {
-                        log.debug("[{}] Recalculate partitions ignored. Service was restarted in time [{}].",
+                        log.info("[{}] Recalculate partitions ignored. Service was restarted in time [{}].",
                                 serviceId, serviceTypesList);
                     } else {
                         log.debug("[{}] Going to recalculate partitions. Service was not restarted in time [{}]!",

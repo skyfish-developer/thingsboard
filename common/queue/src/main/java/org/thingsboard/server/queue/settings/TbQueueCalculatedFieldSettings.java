@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,5 +31,7 @@ public class TbQueueCalculatedFieldSettings {
     @Value("${queue.calculated_fields.state_topic}")
     private String stateTopic;
 
+    @Value("${queue.calculated_fields.init_tenant_fetch_pack_size:1000}")
+    private int initTenantFetchPackSize;
 
 }

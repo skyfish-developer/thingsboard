@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.thingsboard.server.common.data.DataConstants.QUEUE_NAME;
 
+@Slf4j
 @RuleNode(
         type = ComponentType.TRANSFORMATION,
         name = "deduplication",
@@ -59,12 +60,12 @@ import static org.thingsboard.server.common.data.DataConstants.QUEUE_NAME;
                 "<li><strong>ALL</strong> - return all messages as a single JSON array message. " +
                 "Where each element represents object with <strong><i>msg</i></strong> and <strong><i>metadata</i></strong> inner properties.</li></ul>",
         icon = "content_copy",
-        configDirective = "tbTransformationNodeDeduplicationConfig"
+        configDirective = "tbTransformationNodeDeduplicationConfig",
+        docUrl = "https://thingsboard.io/docs/user-guide/rule-engine-2-0/nodes/transformation/deduplication/"
 )
-@Slf4j
 public class TbMsgDeduplicationNode implements TbNode {
 
-    public static final int TB_MSG_DEDUPLICATION_RETRY_DELAY = 10;
+    public static final long TB_MSG_DEDUPLICATION_RETRY_DELAY = 10L;
 
     private TbMsgDeduplicationNodeConfiguration config;
 
@@ -217,16 +218,17 @@ public class TbMsgDeduplicationNode implements TbNode {
     }
 
     private void enqueueForTellNextWithRetry(TbContext ctx, TbMsg msg, int retryAttempt) {
-        if (config.getMaxRetries() > retryAttempt) {
+        if (retryAttempt <= config.getMaxRetries()) {
             ctx.enqueueForTellNext(msg, TbNodeConnectionType.SUCCESS,
-                    () -> {
-                        log.trace("[{}][{}][{}] Successfully enqueue deduplication result message!", ctx.getSelfId(), msg.getOriginator(), retryAttempt);
-                    },
+                    () -> log.trace("[{}][{}][{}] Successfully enqueue deduplication result message!", ctx.getSelfId(), msg.getOriginator(), retryAttempt),
                     throwable -> {
                         log.trace("[{}][{}][{}] Failed to enqueue deduplication output message due to: ", ctx.getSelfId(), msg.getOriginator(), retryAttempt, throwable);
-                        ctx.schedule(() -> {
-                            enqueueForTellNextWithRetry(ctx, msg, retryAttempt + 1);
-                        }, TB_MSG_DEDUPLICATION_RETRY_DELAY, TimeUnit.SECONDS);
+                        if (retryAttempt < config.getMaxRetries()) {
+                            ctx.schedule(() -> enqueueForTellNextWithRetry(ctx, msg, retryAttempt + 1), TB_MSG_DEDUPLICATION_RETRY_DELAY, TimeUnit.SECONDS);
+                        } else {
+                            log.trace("[{}][{}] Max retries [{}] exhausted. Dropping deduplication result message [{}]",
+                                    ctx.getSelfId(), msg.getOriginator(), config.getMaxRetries(), msg.getId());
+                        }
                     });
         }
     }

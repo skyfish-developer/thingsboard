@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public abstract class AbstractEntityProfileNameQueryProcessor<T extends EntityFi
     public AbstractEntityProfileNameQueryProcessor(TenantRepo repo, QueryContext ctx, EdqsQuery query, T filter, EntityType entityType) {
         super(repo, ctx, query, filter, entityType);
         entityProfileNames = new HashSet<>(getProfileNames(this.filter));
-        pattern = RepositoryUtils.toSqlLikePattern(getEntityNameFilter(filter));
+        pattern = RepositoryUtils.toEntityNameSqlLikePattern(getEntityNameFilter(filter));
     }
 
     protected abstract String getEntityNameFilter(T filter);

@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -15,23 +15,27 @@
 ///
 
 import { Component } from '@angular/core';
-import { WidgetSettings, WidgetSettingsComponent } from '@shared/models/widget.models';
+import {WidgetSettings, WidgetSettingsComponent, widgetTitleAutocompleteValues} from '@shared/models/widget.models';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { AppState } from '@core/core.state';
 import { labelValueCardWidgetDefaultSettings } from '@home/components/widget/lib/cards/label-value-card-widget.models';
 import { formatValue } from '@core/utils';
+import { getSourceTbUnitSymbol } from '@shared/models/unit.models';
 
 @Component({
-  selector: 'tb-label-value-card-widget-settings',
-  templateUrl: './label-value-card-widget-settings.component.html',
-  styleUrls: []
+    selector: 'tb-label-value-card-widget-settings',
+    templateUrl: './label-value-card-widget-settings.component.html',
+    styleUrls: [],
+    standalone: false
 })
 export class LabelValueCardWidgetSettingsComponent extends WidgetSettingsComponent {
 
   labelValueCardWidgetSettingsForm: UntypedFormGroup;
 
   valuePreviewFn = this._valuePreviewFn.bind(this);
+
+  predefinedValues = widgetTitleAutocompleteValues;
 
   constructor(protected store: Store<AppState>,
               private fb: UntypedFormBuilder) {
@@ -43,7 +47,7 @@ export class LabelValueCardWidgetSettingsComponent extends WidgetSettingsCompone
   }
 
   protected defaultSettings(): WidgetSettings {
-    return {...labelValueCardWidgetDefaultSettings};
+    return labelValueCardWidgetDefaultSettings;
   }
 
   protected onSettingsSet(settings: WidgetSettings) {
@@ -101,7 +105,7 @@ export class LabelValueCardWidgetSettingsComponent extends WidgetSettingsCompone
   }
 
   private _valuePreviewFn(): string {
-    const units: string = this.widgetConfig.config.units;
+    const units = getSourceTbUnitSymbol(this.widgetConfig.config.units);
     const decimals: number = this.widgetConfig.config.decimals;
     return formatValue(22, decimals, units, true);
   }

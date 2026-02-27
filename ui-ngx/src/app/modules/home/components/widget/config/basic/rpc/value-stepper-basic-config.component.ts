@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -31,13 +31,15 @@ import {
   valueStepperTypeTranslations,
   ValueStepperWidgetSettings
 } from '@home/components/widget/lib/rpc/value-stepper-widget.models';
+import { getSourceTbUnitSymbol } from '@shared/models/unit.models';
 
 type ButtonAppearanceType = 'left' | 'right';
 
 @Component({
-  selector: 'tb-value-stepper-basic-config',
-  templateUrl: './value-stepper-basic-config.component.html',
-  styleUrls: ['../basic-config.scss']
+    selector: 'tb-value-stepper-basic-config',
+    templateUrl: './value-stepper-basic-config.component.html',
+    styleUrls: ['../basic-config.scss'],
+    standalone: false
 })
 export class ValueStepperBasicConfigComponent extends BasicWidgetConfigComponent {
 
@@ -218,7 +220,7 @@ export class ValueStepperBasicConfigComponent extends BasicWidgetConfigComponent
   }
 
   private _valuePreviewFn(): string {
-    const units: string = this.valueStepperWidgetConfigForm.get('appearance').get('valueUnits').value;
+    const units: string = getSourceTbUnitSymbol(this.valueStepperWidgetConfigForm.get('appearance').get('valueUnits').value);
     const decimals: number = this.valueStepperWidgetConfigForm.get('appearance').get('valueDecimals').value;
     return formatValue(48, decimals, units, false);
   }

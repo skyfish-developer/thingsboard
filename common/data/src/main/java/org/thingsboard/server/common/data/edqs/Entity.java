@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public class Entity implements EdqsObject {
     }
 
     @Override
-    public String key() {
+    public String stringKey() {
         return "e_" + fields.getId().toString();
     }
 
@@ -64,5 +64,7 @@ public class Entity implements EdqsObject {
     public ObjectType type() {
         return ObjectType.fromEntityType(type);
     }
+
+    public record Key(UUID id) implements EdqsObjectKey {}
 
 }

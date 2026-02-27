@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -36,6 +36,8 @@ import { BehaviorSubject, merge, Observable, of, ReplaySubject, Subject, throwEr
 import { catchError, map, tap } from 'rxjs/operators';
 import {
   constructTableCssString,
+  isValidPageStepCount,
+  isValidPageStepIncrement,
   noDataMessage,
   TableCellButtonActionDescriptor,
   TableWidgetSettings
@@ -43,7 +45,7 @@ import {
 import cssjs from '@core/css/css';
 import { UtilsService } from '@core/services/utils.service';
 import { TranslateService } from '@ngx-translate/core';
-import { hashCode, isDefined, isDefinedAndNotNull, isNumber, parseHttpErrorMessage } from '@core/utils';
+import { hashCode, isDefined, isDefinedAndNotNull, parseHttpErrorMessage } from '@core/utils';
 import { CollectionViewer, DataSource } from '@angular/cdk/collections';
 import { emptyPageData, PageData } from '@shared/models/page/page-data';
 import {
@@ -96,9 +98,10 @@ interface PersistentTableWidgetActionDescriptor extends TableCellButtonActionDes
 }
 
 @Component({
-  selector: 'tb-persistent-table-widget',
-  templateUrl: './persistent-table.component.html',
-  styleUrls: ['./persistent-table.component.scss' , '../table-widget.scss']
+    selector: 'tb-persistent-table-widget',
+    templateUrl: './persistent-table.component.html',
+    styleUrls: ['./persistent-table.component.scss', '../table-widget.scss'],
+    standalone: false
 })
 
 export class PersistentTableComponent extends PageComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -207,10 +210,10 @@ export class PersistentTableComponent extends PageComponent implements OnInit, O
     this.displayedColumns = [...this.displayTableColumns];
 
     const pageSize = this.settings.defaultPageSize;
-    let pageStepIncrement = this.settings.pageStepIncrement;
-    let pageStepCount = this.settings.pageStepCount;
+    let pageStepIncrement = isValidPageStepIncrement(this.settings.pageStepIncrement) ? this.settings.pageStepIncrement : null;
+    let pageStepCount = isValidPageStepCount(this.settings.pageStepCount) ? this.settings.pageStepCount : null;
 
-    if (isDefined(pageSize) && isNumber(pageSize) && pageSize > 0) {
+    if (Number.isInteger(pageSize) && pageSize > 0) {
       this.defaultPageSize = pageSize;
     }
 
@@ -418,7 +421,7 @@ export class PersistentTableComponent extends PageComponent implements OnInit, O
     if ($event) {
       $event.stopPropagation();
     }
-    const target = $event.target || $event.srcElement || $event.currentTarget;
+    const target = $event.target || $event.currentTarget;
     const config = new OverlayConfig();
     config.backdropClass = 'cdk-overlay-transparent-backdrop';
     config.hasBackdrop = true;

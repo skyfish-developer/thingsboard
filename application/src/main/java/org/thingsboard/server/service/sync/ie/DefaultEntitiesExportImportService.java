@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,7 @@ import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.sync.ie.EntityExportData;
 import org.thingsboard.server.common.data.sync.ie.EntityImportResult;
 import org.thingsboard.server.common.data.util.ThrowingRunnable;
-import org.thingsboard.server.dao.cf.CalculatedFieldService;
-import org.thingsboard.server.dao.exception.DataValidationException;
+import org.thingsboard.server.exception.DataValidationException;
 import org.thingsboard.server.dao.relation.RelationService;
 import org.thingsboard.server.queue.util.TbCoreComponent;
 import org.thingsboard.server.service.entitiy.TbLogEntityActionService;
@@ -62,16 +61,16 @@ public class DefaultEntitiesExportImportService implements EntitiesExportImportS
     private final Map<EntityType, EntityImportService<?, ?, ?>> importServices = new HashMap<>();
 
     private final RelationService relationService;
-    private final CalculatedFieldService calculatedFieldService;
     private final RateLimitService rateLimitService;
     private final TbLogEntityActionService logEntityActionService;
 
     protected static final List<EntityType> SUPPORTED_ENTITY_TYPES = List.of(
             EntityType.CUSTOMER, EntityType.RULE_CHAIN, EntityType.TB_RESOURCE,
             EntityType.DASHBOARD, EntityType.ASSET_PROFILE, EntityType.ASSET,
-            EntityType.DEVICE_PROFILE, EntityType.DEVICE,
+            EntityType.DEVICE_PROFILE, EntityType.OTA_PACKAGE, EntityType.DEVICE,
             EntityType.ENTITY_VIEW, EntityType.WIDGET_TYPE, EntityType.WIDGETS_BUNDLE,
-            EntityType.NOTIFICATION_TEMPLATE, EntityType.NOTIFICATION_TARGET, EntityType.NOTIFICATION_RULE
+            EntityType.NOTIFICATION_TEMPLATE, EntityType.NOTIFICATION_TARGET, EntityType.NOTIFICATION_RULE,
+            EntityType.AI_MODEL
     );
 
     @Override

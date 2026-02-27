@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import static org.thingsboard.server.common.data.ota.OtaPackageUpdateStatus.INIT
 import static org.thingsboard.server.common.data.ota.OtaPackageUpdateStatus.QUEUED;
 import static org.thingsboard.server.common.data.ota.OtaPackageUpdateStatus.UPDATED;
 import static org.thingsboard.server.common.data.ota.OtaPackageUpdateStatus.UPDATING;
+import static org.thingsboard.server.dao.service.OtaPackageServiceTest.TARGET_FW_VERSION;
 import static org.thingsboard.server.transport.lwm2m.Lwm2mTestHelper.LwM2MProfileBootstrapConfigType.NONE;
 
 @Slf4j
@@ -87,13 +88,14 @@ public class Ota5LwM2MIntegrationTest extends AbstractOtaLwM2MIntegrationTest {
     @Test
     public void testFirmwareUpdateByObject5_Ok() throws Exception {
         Lwm2mDeviceProfileTransportConfiguration transportConfiguration = getTransportConfiguration(OBSERVE_ATTRIBUTES_WITH_PARAMS_OTA5, getBootstrapServerCredentialsNoSec(NONE));
-        DeviceProfile deviceProfile =  createLwm2mDeviceProfile("profileFor" + this.CLIENT_ENDPOINT_OTA5, transportConfiguration);
-        LwM2MDeviceCredentials deviceCredentials = getDeviceCredentialsNoSec(createNoSecClientCredentials(this.CLIENT_ENDPOINT_OTA5));
-        final Device device = createLwm2mDevice(deviceCredentials, this.CLIENT_ENDPOINT_OTA5, deviceProfile.getId());
-        createNewClient(SECURITY_NO_SEC, null, false, this.CLIENT_ENDPOINT_OTA5, device.getId().getId().toString());
+        DeviceProfile deviceProfile =  createLwm2mDeviceProfile("profileFor" + this.CLIENT_ENDPOINT_OTA5 + "Ok", transportConfiguration);
+        String endpoint = this.CLIENT_ENDPOINT_OTA5 + "Ok";
+        LwM2MDeviceCredentials deviceCredentials = getDeviceCredentialsNoSec(createNoSecClientCredentials(endpoint));
+        final Device device = createLwm2mDevice(deviceCredentials, endpoint, deviceProfile.getId());
+        createNewClient(SECURITY_NO_SEC, null, false, endpoint, device.getId().getId().toString());
         awaitObserveReadAll(5, device.getId().getId().toString());
 
-        device.setFirmwareId(createFirmware("fw.v.1.5.0-update", deviceProfile.getId()).getId());
+        device.setFirmwareId(createFirmware(TARGET_FW_VERSION, deviceProfile.getId()).getId());
         final Device savedDevice = doPost("/api/device", device, Device.class);
 
         assertThat(savedDevice).as("saved device").isNotNull();
@@ -105,6 +107,4 @@ public class Ota5LwM2MIntegrationTest extends AbstractOtaLwM2MIntegrationTest {
                 .until(() -> getFwSwStateTelemetryFromAPI(device.getId().getId(), "fw_state"), this::predicateForStatuses);
         log.warn("Object5: Got the ts: {}", ts);
     }
-
-
 }

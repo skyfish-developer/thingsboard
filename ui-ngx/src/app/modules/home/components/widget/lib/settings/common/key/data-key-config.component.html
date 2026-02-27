@@ -1,6 +1,6 @@
 <!--
 
-    Copyright © 2016-2025 The Thingsboard Authors
+    Copyright © 2016-2026 The Thingsboard Authors
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@
         <div class="tb-form-row space-between" *ngIf="!hideDataKeyUnits">
           <div translate>widget-config.units-short</div>
           <tb-unit-input
+            [supportsUnitConversion]="supportsUnitConversion"
             formControlName="units">
           </tb-unit-input>
         </div>
@@ -78,7 +79,7 @@
                     formControlName="funcBody">
         </tb-js-func>
       </section>
-      <ng-container *ngIf="widgetType === widgetTypes.latest && modelValue.type === dataKeyTypes.timeseries">
+      <ng-container *ngIf="!hideDataKeyAggregation && widgetType === widgetTypes.latest && modelValue.type === dataKeyTypes.timeseries">
         <div class="tb-form-row column">
           <div class="tb-form-row space-between no-border no-padding">
             <div>{{ 'datakey.aggregation' | translate }}</div>

@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 /// limitations under the License.
 ///
 
-import { Component, DestroyRef, Inject, OnInit, SkipSelf } from '@angular/core';
+import { Component, DestroyRef, Inject, SkipSelf } from '@angular/core';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
@@ -54,13 +54,14 @@ export interface EntityAliasesDialogData {
 }
 
 @Component({
-  selector: 'tb-entity-aliases-dialog',
-  templateUrl: './entity-aliases-dialog.component.html',
-  providers: [{provide: ErrorStateMatcher, useExisting: EntityAliasesDialogComponent}],
-  styleUrls: ['./entity-aliases-dialog.component.scss']
+    selector: 'tb-entity-aliases-dialog',
+    templateUrl: './entity-aliases-dialog.component.html',
+    providers: [{ provide: ErrorStateMatcher, useExisting: EntityAliasesDialogComponent }],
+    styleUrls: ['./entity-aliases-dialog.component.scss'],
+    standalone: false
 })
 export class EntityAliasesDialogComponent extends DialogComponent<EntityAliasesDialogComponent, EntityAliases>
-  implements OnInit, ErrorStateMatcher {
+  implements ErrorStateMatcher {
 
   title: string;
   disableAdd: boolean;
@@ -107,8 +108,7 @@ export class EntityAliasesDialogComponent extends DialogComponent<EntityAliasesD
               this.addWidgetTitleToWidgetsMap(widget.config.alarmSource.entityAliasId, widget.config.title);
             }
           } else {
-            const datasources = this.dashboardUtils.validateAndUpdateDatasources(widget.config.datasources);
-            datasources.forEach((datasource) => {
+            this.dashboardUtils.getWidgetDatasources(widget).forEach((datasource) => {
               if ([DatasourceType.entity, DatasourceType.entityCount, DatasourceType.alarmCount].includes(datasource.type)
                 && datasource.entityAliasId) {
                 this.addWidgetTitleToWidgetsMap(datasource.entityAliasId, widget.config.title);
@@ -143,7 +143,9 @@ export class EntityAliasesDialogComponent extends DialogComponent<EntityAliasesD
       widgetsTitleList = [];
       this.aliasToWidgetsMap[aliasId] = widgetsTitleList;
     }
-    widgetsTitleList.push(widgetTitle);
+    if (!widgetsTitleList.includes(widgetTitle)) {
+      widgetsTitleList.push(widgetTitle);
+    }
   }
 
   private createEntityAliasFormControl(aliasId: string, entityAlias: EntityAlias): AbstractControl {
@@ -164,9 +166,6 @@ export class EntityAliasesDialogComponent extends DialogComponent<EntityAliasesD
 
   entityAliasesFormArray(): UntypedFormArray {
     return this.entityAliasesFormGroup.get('entityAliases') as UntypedFormArray;
-  }
-
-  ngOnInit(): void {
   }
 
   isErrorState(control: UntypedFormControl | null, form: FormGroupDirective | NgForm | null): boolean {

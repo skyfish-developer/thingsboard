@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,17 +47,19 @@ public class Ota9LwM2MIntegrationTest extends AbstractOtaLwM2MIntegrationTest {
      * => PKG integrity verified -> DELIVERED  (Res=3 (Successfully Downloaded and package integrity verified) && State=3) -> INSTALLED;
      * => Install -> INSTALLED (Res=2 SW successfully installed) && State=4) -> Start
      *
-     * */
+     *
+     */
     @Test
     public void testSoftwareUpdateByObject9() throws Exception {
+        String clientEndpoint = this.CLIENT_ENDPOINT_OTA9;
         Lwm2mDeviceProfileTransportConfiguration transportConfiguration = getTransportConfiguration(OBSERVE_ATTRIBUTES_WITH_PARAMS_OTA9, getBootstrapServerCredentialsNoSec(NONE));
-        DeviceProfile deviceProfile = createLwm2mDeviceProfile("profileFor" + this.CLIENT_ENDPOINT_OTA9, transportConfiguration);
-        LwM2MDeviceCredentials deviceCredentials = getDeviceCredentialsNoSec(createNoSecClientCredentials(this.CLIENT_ENDPOINT_OTA9));
-        final Device device = createLwm2mDevice(deviceCredentials, this.CLIENT_ENDPOINT_OTA9, deviceProfile.getId());
-        createNewClient(SECURITY_NO_SEC, null, false, this.CLIENT_ENDPOINT_OTA9, device.getId().getId().toString());
+        DeviceProfile deviceProfile = createLwm2mDeviceProfile("profileFor" + clientEndpoint, transportConfiguration);
+        LwM2MDeviceCredentials deviceCredentials = getDeviceCredentialsNoSec(createNoSecClientCredentials(clientEndpoint));
+        final Device device = createLwm2mDevice(deviceCredentials, clientEndpoint, deviceProfile.getId());
+        createNewClient(SECURITY_NO_SEC, null, false, clientEndpoint, device.getId().getId().toString());
         awaitObserveReadAll(4, device.getId().getId().toString());
 
-        device.setSoftwareId(createSoftware(deviceProfile.getId()).getId());
+        device.setSoftwareId(createSoftware(deviceProfile.getId(), "v1.0").getId());
         final Device savedDevice = doPost("/api/device", device, Device.class); //sync call
 
         assertThat(savedDevice).as("saved device").isNotNull();

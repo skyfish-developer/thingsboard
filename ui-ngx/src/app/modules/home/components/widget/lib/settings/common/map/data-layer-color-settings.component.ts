@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -27,16 +27,17 @@ import { MapSettingsContext } from '@home/components/widget/lib/settings/common/
 import { DatasourceType } from '@shared/models/widget.models';
 
 @Component({
-  selector: 'tb-data-layer-color-settings',
-  templateUrl: './data-layer-color-settings.component.html',
-  styleUrls: [],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => DataLayerColorSettingsComponent),
-      multi: true
-    }
-  ]
+    selector: 'tb-data-layer-color-settings',
+    templateUrl: './data-layer-color-settings.component.html',
+    styleUrls: [],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => DataLayerColorSettingsComponent),
+            multi: true
+        }
+    ],
+    standalone: false
 })
 export class DataLayerColorSettingsComponent implements ControlValueAccessor {
 
@@ -97,19 +98,22 @@ export class DataLayerColorSettingsComponent implements ControlValueAccessor {
     if (this.popoverService.hasPopover(trigger)) {
       this.popoverService.hidePopover(trigger);
     } else {
-      const ctx: any = {
-        colorSettings: this.modelValue,
-        context: this.context,
-        dsType: this.dsType,
-        dsEntityAliasId: this.dsEntityAliasId,
-        dsDeviceId: this.dsDeviceId,
-        helpId: this.helpId
-      };
-      const colorSettingsPanelPopover = this.popoverService.displayPopover(trigger, this.renderer,
-        this.viewContainerRef, DataLayerColorSettingsPanelComponent, 'left', true, null,
-        ctx,
-        {},
-        {}, {}, true);
+      const colorSettingsPanelPopover = this.popoverService.displayPopover({
+        trigger,
+        renderer: this.renderer,
+        componentType: DataLayerColorSettingsPanelComponent,
+        hostView: this.viewContainerRef,
+        preferredPlacement: 'left',
+        context: {
+          colorSettings: this.modelValue,
+          context: this.context,
+          dsType: this.dsType,
+          dsEntityAliasId: this.dsEntityAliasId,
+          dsDeviceId: this.dsDeviceId,
+          helpId: this.helpId
+        },
+        isModal: true
+      });
       colorSettingsPanelPopover.tbComponentRef.instance.popover = colorSettingsPanelPopover;
       colorSettingsPanelPopover.tbComponentRef.instance.colorSettingsApplied.subscribe((colorSettings) => {
         colorSettingsPanelPopover.hide();

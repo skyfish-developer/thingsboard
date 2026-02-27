@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -32,13 +32,13 @@ import {
 } from '@shared/models/resource.models';
 import { startWith, takeUntil } from 'rxjs/operators';
 import { ActionNotificationShow } from '@core/notification/notification.actions';
-import { isDefinedAndNotNull } from '@core/utils';
+import { base64toString, isDefinedAndNotNull, stringToBase64 } from '@core/utils';
 import { getCurrentAuthState } from '@core/auth/auth.selectors';
-import { scadaSymbolGeneralStateHighlightRules } from '@home/pages/scada-symbol/scada-symbol-editor.models';
 
 @Component({
-  selector: 'tb-js-resource',
-  templateUrl: './js-resource.component.html'
+    selector: 'tb-js-resource',
+    templateUrl: './js-resource.component.html',
+    standalone: false
 })
 export class JsResourceComponent extends EntityComponent<Resource> implements OnInit, OnDestroy {
 
@@ -83,15 +83,15 @@ export class JsResourceComponent extends EntityComponent<Resource> implements On
     return this.fb.group({
       title: [entity ? entity.title : '', [Validators.required, Validators.maxLength(255)]],
       resourceSubType: [entity?.resourceSubType ? entity.resourceSubType : ResourceSubType.EXTENSION, Validators.required],
-      fileName: [entity ? entity.fileName : null, Validators.required],
+      fileName: [entity ? entity.fileName : null],
       data: [entity ? entity.data : null, this.isAdd ? [Validators.required] : []],
-      content: [entity?.data?.length ? window.atob(entity.data) : '', Validators.required]
+      content: [entity?.data?.length ? base64toString(entity.data) : '', Validators.required]
     });
   }
 
   updateForm(entity: Resource): void {
     this.entityForm.patchValue(entity);
-    const content = entity.resourceSubType === ResourceSubType.MODULE && entity?.data?.length ? window.atob(entity.data) : '';
+    const content = entity.resourceSubType === ResourceSubType.MODULE && entity?.data?.length ? base64toString(entity.data) : '';
     this.entityForm.get('content').patchValue(content);
   }
 
@@ -111,7 +111,9 @@ export class JsResourceComponent extends EntityComponent<Resource> implements On
       if (!formValue.fileName) {
         formValue.fileName = formValue.title + '.js';
       }
-      formValue.data = window.btoa((formValue as any).content);
+      formValue.data = new File([(formValue as any).content], formValue.fileName, {
+        type: 'text/javascript'
+      });
       delete (formValue as any).content;
     }
     return super.prepareFormValue(formValue);
@@ -126,7 +128,7 @@ export class JsResourceComponent extends EntityComponent<Resource> implements On
   }
 
   convertToBase64File(data: string): string {
-    return window.btoa(data);
+    return stringToBase64(data);
   }
 
   onResourceIdCopied(): void {
@@ -171,6 +173,4 @@ export class JsResourceComponent extends EntityComponent<Resource> implements On
       this.entityForm.get('content').enable({ emitEvent: false });
     }
   }
-
-  protected readonly highlightRules = scadaSymbolGeneralStateHighlightRules;
 }

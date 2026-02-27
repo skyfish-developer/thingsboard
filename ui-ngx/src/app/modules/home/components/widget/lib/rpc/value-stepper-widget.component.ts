@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -29,7 +29,13 @@ import {
   ViewEncapsulation
 } from '@angular/core';
 import { BasicActionWidgetComponent, ValueSetter } from '@home/components/widget/lib/action/action-widget.models';
-import { backgroundStyle, ComponentStyle, overlayStyle, textStyle } from '@shared/models/widget-settings.models';
+import {
+  backgroundStyle,
+  ComponentStyle,
+  overlayStyle,
+  textStyle,
+  ValueFormatProcessor
+} from '@shared/models/widget-settings.models';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { ImagePipe } from '@shared/pipe/image.pipe';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -42,7 +48,7 @@ import {
 } from '@home/components/widget/lib/rpc/power-button-widget.models';
 import { SVG, Svg } from '@svgdotjs/svg.js';
 import { MatIconRegistry } from '@angular/material/icon';
-import { formatValue, isDefinedAndNotNull, isNumeric } from '@core/utils';
+import { isDefinedAndNotNull, isNumeric } from '@core/utils';
 import {
   valueStepperDefaultSettings,
   ValueStepperWidgetSettings
@@ -51,10 +57,11 @@ import { UtilsService } from '@core/services/utils.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'tb-value-stepper-widget',
-  templateUrl: './value-stepper-widget.component.html',
-  styleUrls: ['../action/action-widget.scss', './value-stepper-widget.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'tb-value-stepper-widget',
+    templateUrl: './value-stepper-widget.component.html',
+    styleUrls: ['../action/action-widget.scss', './value-stepper-widget.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class ValueStepperWidgetComponent extends
   BasicActionWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -113,6 +120,7 @@ export class ValueStepperWidgetComponent extends
   private leftDisabledState$ = new BehaviorSubject(false);
   private rightDisabledState$ = new BehaviorSubject(false);
 
+  private valueFormat: ValueFormatProcessor;
   protected destroyRef = inject(DestroyRef);
 
   constructor(protected imagePipe: ImagePipe,
@@ -141,6 +149,11 @@ export class ValueStepperWidgetComponent extends
     this.showRightButton = this.settings.buttonAppearance.rightButton.showButton;
     this.valueStyle = textStyle(this.settings.appearance.valueFont);
     this.valueStyleColor = this.settings.appearance.valueColor;
+
+    this.valueFormat = ValueFormatProcessor.fromSettings(this.ctx.$injector, {
+      units: this.settings.appearance.valueUnits,
+      decimals: this.settings.appearance.valueDecimals
+    });
 
     if (this.showValueBox) {
       const valueBoxCss = `.tb-value-stepper-value-box {\n`+
@@ -239,7 +252,7 @@ export class ValueStepperWidgetComponent extends
 
   private updateValueText() {
     if (isDefinedAndNotNull(this.value) && isNumeric(this.value)) {
-      this.valueText = formatValue(this.value, this.settings.appearance.valueDecimals, this.settings.appearance.valueUnits, false);
+      this.valueText = this.valueFormat.format(this.value);
     } else {
       this.valueText = 'N/A';
     }

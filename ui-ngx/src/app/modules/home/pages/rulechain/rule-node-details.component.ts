@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -26,10 +26,8 @@ import {
   ViewChild
 } from '@angular/core';
 import { PageComponent } from '@shared/components/page.component';
-import { Store } from '@ngrx/store';
-import { AppState } from '@core/core.state';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { FcRuleNode, RuleNodeType } from '@shared/models/rule-node.models';
+import { FcRuleNode } from '@shared/models/rule-node.models';
 import { EntityType } from '@shared/models/entity-type.models';
 import { Subject } from 'rxjs';
 import { RuleNodeConfigComponent } from './rule-node-config.component';
@@ -39,12 +37,13 @@ import { ComponentClusteringMode } from '@shared/models/component-descriptor.mod
 import { coerceBoolean } from '@shared/decorators/coercion';
 import { ServiceType } from '@shared/models/queue.models';
 import { takeUntil } from 'rxjs/operators';
-import { getCurrentAuthState } from '@core/auth/auth.selectors';
+import { AdditionalDebugActionConfig } from '@home/components/entity/debug/entity-debug-settings.model';
 
 @Component({
-  selector: 'tb-rule-node',
-  templateUrl: './rule-node-details.component.html',
-  styleUrls: ['./rule-node-details.component.scss']
+    selector: 'tb-rule-node',
+    templateUrl: './rule-node-details.component.html',
+    styleUrls: ['./rule-node-details.component.scss'],
+    standalone: false
 })
 export class RuleNodeDetailsComponent extends PageComponent implements OnInit, OnChanges, OnDestroy {
 
@@ -67,27 +66,26 @@ export class RuleNodeDetailsComponent extends PageComponent implements OnInit, O
   @coerceBoolean()
   isAdd = false;
 
+  @Input()
+  additionalActionConfig: AdditionalDebugActionConfig;
+
   @Output()
   initRuleNode = new EventEmitter<void>();
 
   @Output()
   changeScript = new EventEmitter<void>();
 
-  ruleNodeType = RuleNodeType;
   entityType = EntityType;
 
   serviceType = ServiceType.TB_RULE_ENGINE;
 
   ruleNodeFormGroup: UntypedFormGroup;
 
-  readonly ruleChainDebugPerTenantLimitsConfiguration = getCurrentAuthState(this.store).ruleChainDebugPerTenantLimitsConfiguration;
-
   private destroy$ = new Subject<void>();
 
-  constructor(protected store: Store<AppState>,
-              private fb: UntypedFormBuilder,
+  constructor(private fb: UntypedFormBuilder,
               private router: Router) {
-    super(store);
+    super();
     this.ruleNodeFormGroup = this.fb.group({});
   }
 

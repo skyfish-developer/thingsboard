@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -15,21 +15,19 @@
 ///
 
 import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
-import { PageComponent } from '@shared/components/page.component';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { Store } from '@ngrx/store';
-import { AppState } from '@core/core.state';
 import { TbPopoverComponent } from '@shared/components/popover.component';
 import { UnplacedMapDataItem } from '@home/components/widget/lib/maps/data-layer/latest-map-data-layer';
 
 @Component({
-  selector: 'tb-select-map-entity-panel',
-  templateUrl: './select-map-entity-panel.component.html',
-  providers: [],
-  styleUrls: ['./select-map-entity-panel.component.scss'],
-  encapsulation: ViewEncapsulation.None
+    selector: 'tb-select-map-entity-panel',
+    templateUrl: './select-map-entity-panel.component.html',
+    providers: [],
+    styleUrls: ['./select-map-entity-panel.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
-export class SelectMapEntityPanelComponent extends PageComponent implements OnInit {
+export class SelectMapEntityPanelComponent implements OnInit {
 
   @Input()
   entities: UnplacedMapDataItem[];
@@ -42,9 +40,7 @@ export class SelectMapEntityPanelComponent extends PageComponent implements OnIn
   selectedEntity: UnplacedMapDataItem = null;
 
   constructor(private fb: UntypedFormBuilder,
-              protected store: Store<AppState>,
               private popover: TbPopoverComponent) {
-    super(store);
   }
 
   ngOnInit(): void {

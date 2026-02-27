@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.id.CustomerId;
@@ -33,7 +33,7 @@ import org.thingsboard.server.common.data.query.EntityKeyType;
 import org.thingsboard.server.common.data.query.RelationsQueryFilter;
 import org.thingsboard.server.common.data.relation.EntitySearchDirection;
 import org.thingsboard.server.common.data.relation.RelationEntityTypeFilter;
-import org.thingsboard.server.common.msg.edqs.EdqsApiService;
+import org.thingsboard.server.common.msg.edqs.EdqsService;
 import org.thingsboard.server.dao.service.DaoSqlTest;
 import org.thingsboard.server.edqs.util.EdqsRocksDb;
 
@@ -53,19 +53,20 @@ import static org.awaitility.Awaitility.await;
         "queue.edqs.sync.enabled=true",
         "queue.edqs.api.supported=true",
         "queue.edqs.api.auto_enable=true",
-        "queue.edqs.mode=local"
+        "queue.edqs.mode=local",
+        "queue.edqs.readiness_check_interval=1000"
 })
 public class EdqsEntityServiceTest extends EntityServiceTest {
 
     @Autowired
-    private EdqsApiService edqsApiService;
+    private EdqsService edqsService;
 
-    @MockBean
+    @MockitoBean
     private EdqsRocksDb edqsRocksDb;
 
     @Before
     public void beforeEach() {
-        await().atMost(TIMEOUT, TimeUnit.SECONDS).until(() -> edqsApiService.isEnabled());
+        await().atMost(TIMEOUT, TimeUnit.SECONDS).until(() -> edqsService.isApiEnabled());
     }
 
     // sql implementation has a bug with data duplication, edqs implementation returns correct value
@@ -110,7 +111,7 @@ public class EdqsEntityServiceTest extends EntityServiceTest {
 
     @Override
     protected List<EntityData> findByQueryAndCheckTelemetry(EntityDataQuery query, EntityKeyType entityKeyType, String key, List<String> expectedTelemetries) {
-        return await().atMost(TIMEOUT, TimeUnit.SECONDS).until(() -> findEntitiesTelemetry(query, entityKeyType, key, expectedTelemetries),
+        return await().atMost(TIMEOUT, TimeUnit.SECONDS).until(() -> loadAllData(query, expectedTelemetries.size()),
                 loadedEntities -> loadedEntities.stream().map(entityData -> entityData.getLatest().get(entityKeyType).get(key).getValue()).toList().containsAll(expectedTelemetries));
     }
 

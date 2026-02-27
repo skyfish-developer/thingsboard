@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -19,11 +19,13 @@ import {
   ComponentRef,
   EventEmitter,
   forwardRef,
+  HostBinding,
   Input,
   OnDestroy,
   Output,
   ViewChild,
-  ViewContainerRef
+  ViewContainerRef,
+  ViewEncapsulation
 } from '@angular/core';
 import {
   ControlValueAccessor,
@@ -45,20 +47,23 @@ import { deepClone } from '@core/utils';
 import { RuleChainType } from '@shared/models/rule-chain.models';
 
 @Component({
-  selector: 'tb-rule-node-config',
-  templateUrl: './rule-node-config.component.html',
-  styleUrls: ['./rule-node-config.component.scss'],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => RuleNodeConfigComponent),
-    multi: true
-  }]
+    selector: 'tb-rule-node-config',
+    templateUrl: './rule-node-config.component.html',
+    styleUrls: ['./rule-node-config.component.scss'],
+    providers: [{
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => RuleNodeConfigComponent),
+            multi: true
+        }],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class RuleNodeConfigComponent implements ControlValueAccessor, OnDestroy {
 
   @ViewChild('definedConfigContent', {read: ViewContainerRef, static: true}) definedConfigContainer: ViewContainerRef;
-
   @ViewChild('jsonObjectEditComponent') jsonObjectEditComponent: JsonObjectEditComponent;
+
+  @HostBinding('style.display') readonly styleDisplay = 'block';
 
   private requiredValue: boolean;
   get required(): boolean {

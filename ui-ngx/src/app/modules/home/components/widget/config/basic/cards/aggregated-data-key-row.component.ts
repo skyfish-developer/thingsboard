@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -40,8 +40,6 @@ import {
 } from '@shared/models/widget.models';
 import { DataKeyType } from '@shared/models/telemetry/telemetry.models';
 import { AggregationType } from '@shared/models/time/time.models';
-import { TranslateService } from '@ngx-translate/core';
-import { TruncatePipe } from '@shared/pipe/truncate.pipe';
 import {
   DataKeyConfigDialogComponent,
   DataKeyConfigDialogData
@@ -55,19 +53,21 @@ import {
 import { WidgetConfigCallbacks } from '@home/components/widget/config/widget-config.component.models';
 import { FormProperty } from '@shared/models/dynamic-form.models';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { getSourceTbUnitSymbol, TbUnit } from '@shared/models/unit.models';
 
 @Component({
-  selector: 'tb-aggregated-data-key-row',
-  templateUrl: './aggregated-data-key-row.component.html',
-  styleUrls: ['./aggregated-data-key-row.component.scss', '../../../lib/settings/common/key/data-keys.component.scss'],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => AggregatedDataKeyRowComponent),
-      multi: true
-    }
-  ],
-  encapsulation: ViewEncapsulation.None
+    selector: 'tb-aggregated-data-key-row',
+    templateUrl: './aggregated-data-key-row.component.html',
+    styleUrls: ['./aggregated-data-key-row.component.scss', '../../../lib/settings/common/key/data-keys.component.scss'],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => AggregatedDataKeyRowComponent),
+            multi: true
+        }
+    ],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class AggregatedDataKeyRowComponent implements ControlValueAccessor, OnInit, OnChanges {
 
@@ -119,17 +119,11 @@ export class AggregatedDataKeyRowComponent implements ControlValueAccessor, OnIn
     return this.widgetConfigComponent.modelValue?.latestDataKeySettingsDirective;
   }
 
-  get isEntityDatasource(): boolean {
-    return [DatasourceType.device, DatasourceType.entity].includes(this.datasourceType);
-  }
-
   private propagateChange = (_val: any) => {};
 
   constructor(private fb: UntypedFormBuilder,
               private dialog: MatDialog,
               private cd: ChangeDetectorRef,
-              public translate: TranslateService,
-              public truncate: TruncatePipe,
               private widgetConfigComponent: WidgetConfigComponent,
               private destroyRef: DestroyRef) {
   }
@@ -222,7 +216,8 @@ export class AggregatedDataKeyRowComponent implements ControlValueAccessor, OnIn
           callbacks: this.callbacks,
           hideDataKeyName: true,
           hideDataKeyLabel: true,
-          hideDataKeyColor: true
+          hideDataKeyColor: true,
+          supportsUnitConversion: true
         }
       }).afterClosed().subscribe((updatedDataKey) => {
       if (updatedDataKey) {
@@ -253,8 +248,8 @@ export class AggregatedDataKeyRowComponent implements ControlValueAccessor, OnIn
   }
 
   private _valuePreviewFn(): string {
-    const units: string = this.keyRowFormGroup.get('units').value;
+    const units: TbUnit = this.keyRowFormGroup.get('units').value;
     const decimals: number = this.keyRowFormGroup.get('decimals').value;
-    return formatValue(22, decimals, units, true);
+    return formatValue(22, decimals, getSourceTbUnitSymbol(units), true);
   }
 }

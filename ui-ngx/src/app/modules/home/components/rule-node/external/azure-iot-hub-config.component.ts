@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -22,11 +22,13 @@ import {
   azureIotHubCredentialsTypes,
   azureIotHubCredentialsTypeTranslations
 } from '@home/components/rule-node/rule-node-config.models';
+import { MqttVersion } from '@shared/models/mqtt.models';
 
 @Component({
-  selector: 'tb-external-node-azure-iot-hub-config',
-  templateUrl: './azure-iot-hub-config.component.html',
-  styleUrls: ['./mqtt-config.component.scss']
+    selector: 'tb-external-node-azure-iot-hub-config',
+    templateUrl: './azure-iot-hub-config.component.html',
+    styleUrls: ['./mqtt-config.component.scss'],
+    standalone: false
 })
 export class AzureIotHubConfigComponent extends RuleNodeConfigurationComponent {
 
@@ -34,6 +36,7 @@ export class AzureIotHubConfigComponent extends RuleNodeConfigurationComponent {
 
   allAzureIotHubCredentialsTypes = azureIotHubCredentialsTypes;
   azureIotHubCredentialsTypeTranslationsMap = azureIotHubCredentialsTypeTranslations;
+  MqttVersion = MqttVersion;
 
   constructor(private fb: UntypedFormBuilder) {
     super();
@@ -53,6 +56,7 @@ export class AzureIotHubConfigComponent extends RuleNodeConfigurationComponent {
       clientId: [configuration ? configuration.clientId : null, [Validators.required]],
       cleanSession: [configuration ? configuration.cleanSession : false, []],
       ssl: [configuration ? configuration.ssl : false, []],
+      protocolVersion: [configuration ? configuration.protocolVersion : null, []],
       credentials: this.fb.group(
         {
           type: [configuration && configuration.credentials ? configuration.credentials.type : null, [Validators.required]],

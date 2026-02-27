@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -20,9 +20,10 @@ import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms
 import { RuleNodeConfiguration, RuleNodeConfigurationComponent } from '@shared/models/rule-node.models';
 
 @Component({
-  selector: 'tb-external-node-mqtt-config',
-  templateUrl: './mqtt-config.component.html',
-  styleUrls: ['./mqtt-config.component.scss']
+    selector: 'tb-external-node-mqtt-config',
+    templateUrl: './mqtt-config.component.html',
+    styleUrls: ['./mqtt-config.component.scss'],
+    standalone: false
 })
 export class MqttConfigComponent extends RuleNodeConfigurationComponent {
 
@@ -52,6 +53,7 @@ export class MqttConfigComponent extends RuleNodeConfigurationComponent {
       cleanSession: [configuration ? configuration.cleanSession : false, []],
       retainedMessage: [configuration ? configuration.retainedMessage : false, []],
       ssl: [configuration ? configuration.ssl : false, []],
+      protocolVersion: [configuration ? configuration.protocolVersion : null, []],
       credentials: [configuration ? configuration.credentials : null, []]
     });
   }

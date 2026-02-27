@@ -1,5 +1,5 @@
 /**
- * Copyright © 2016-2025 The Thingsboard Authors
+ * Copyright © 2016-2026 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class EdqsEntityDataQueryTest extends AbstractContainerTest {
     @BeforeClass
     public void beforeClass() throws Exception {
         testRestClient.login("sysadmin@thingsboard.org", "sysadmin");
-        await().atMost(60, TimeUnit.SECONDS).until(() -> testRestClient.isEdqsApiEnabled());
+        await().atMost(60, TimeUnit.SECONDS).until(() -> testRestClient.getEdqsState().isApiEnabled());
 
         tenantId = testRestClient.postTenant(EntityPrototypes.defaultTenantPrototype("Tenant")).getId();
         tenantAdminId = testRestClient.createUserAndLogin(defaultTenantAdmin(tenantId, "tenantAdmin@thingsboard.org"), "tenant");

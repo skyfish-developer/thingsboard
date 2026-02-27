@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import { HomeComponentsModule } from '@modules/home/components/home-components.m
 import { SmsProviderComponent } from '@home/pages/admin/sms-provider.component';
 import { SendTestSmsDialogComponent } from '@home/pages/admin/send-test-sms-dialog.component';
 import { HomeSettingsComponent } from '@home/pages/admin/home-settings.component';
-import { ResourcesLibraryComponent } from '@home/pages/admin/resource/resources-library.component';
 import { ResourceTabsComponent } from '@home/pages/admin/resource/resource-tabs.component';
 import { ResourcesTableHeaderComponent } from '@home/pages/admin/resource/resources-table-header.component';
 import { QueueComponent } from '@home/pages/admin/queue/queue.component';
@@ -37,6 +36,8 @@ import { OAuth2Module } from '@home/pages/admin/oauth2/oauth2.module';
 import { JsLibraryTableHeaderComponent } from '@home/pages/admin/resource/js-library-table-header.component';
 import { JsResourceComponent } from '@home/pages/admin/resource/js-resource.component';
 import { NgxFlowModule } from '@flowjs/ngx-flow';
+import { TrendzSettingsComponent } from '@home/pages/admin/trendz-settings.component';
+import { ResourceLibraryTabsComponent } from '@home/pages/admin/resource/resource-library-tabs.component';
 
 @NgModule({
   declarations:
@@ -47,15 +48,16 @@ import { NgxFlowModule } from '@flowjs/ngx-flow';
       SendTestSmsDialogComponent,
       SecuritySettingsComponent,
       HomeSettingsComponent,
-      ResourcesLibraryComponent,
       ResourceTabsComponent,
+      ResourceLibraryTabsComponent,
       ResourcesTableHeaderComponent,
       JsResourceComponent,
       JsLibraryTableHeaderComponent,
       QueueComponent,
       RepositoryAdminSettingsComponent,
       AutoCommitAdminSettingsComponent,
-      TwoFactorAuthSettingsComponent
+      TwoFactorAuthSettingsComponent,
+      TrendzSettingsComponent
     ],
   imports: [
     CommonModule,

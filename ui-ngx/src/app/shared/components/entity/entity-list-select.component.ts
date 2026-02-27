@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -14,16 +14,13 @@
 /// limitations under the License.
 ///
 
-import { AfterViewInit, Component, DestroyRef, forwardRef, Input, OnInit } from '@angular/core';
-import { ControlValueAccessor, UntypedFormBuilder, UntypedFormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { Store } from '@ngrx/store';
-import { AppState } from '@core/core.state';
-import { TranslateService } from '@ngx-translate/core';
+import { booleanAttribute, Component, DestroyRef, forwardRef, Input, OnInit } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { AliasEntityType, EntityType } from '@shared/models/entity-type.models';
 import { EntityService } from '@core/http/entity.service';
 import { EntityId } from '@shared/models/id/entity-id';
-import { coerceBooleanProperty } from '@angular/cdk/coercion';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { isDefinedAndNotNull } from '@core/utils';
 
 interface EntityListSelectModel {
   entityType: EntityType | AliasEntityType;
@@ -31,17 +28,18 @@ interface EntityListSelectModel {
 }
 
 @Component({
-  selector: 'tb-entity-list-select',
-  templateUrl: './entity-list-select.component.html',
-  styleUrls: ['./entity-list-select.component.scss'],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => EntityListSelectComponent),
-    multi: true
-  }]
+    selector: 'tb-entity-list-select',
+    templateUrl: './entity-list-select.component.html',
+    styleUrls: ['./entity-list-select.component.scss'],
+    providers: [{
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => EntityListSelectComponent),
+            multi: true
+        }],
+    standalone: false
 })
 
-export class EntityListSelectComponent implements ControlValueAccessor, OnInit, AfterViewInit {
+export class EntityListSelectComponent implements ControlValueAccessor, OnInit {
 
   entityListSelectFormGroup: UntypedFormGroup;
 
@@ -53,27 +51,34 @@ export class EntityListSelectComponent implements ControlValueAccessor, OnInit, 
   @Input()
   useAliasEntityTypes: boolean;
 
-  private requiredValue: boolean;
-  get required(): boolean {
-    return this.requiredValue;
-  }
-  @Input()
-  set required(value: boolean) {
-    this.requiredValue = coerceBooleanProperty(value);
-  }
+  @Input({transform: booleanAttribute})
+  required: boolean;
 
   @Input()
   disabled: boolean;
 
+  @Input({transform: booleanAttribute})
+  inlineField: boolean;
+
+  @Input({transform: booleanAttribute})
+  filterAllowedEntityTypes = true;
+
+  @Input()
+  predefinedEntityType: EntityType | AliasEntityType;
+
+  @Input()
+  additionEntityTypes: {[key in string]: string} = {};
+
+  @Input({transform: booleanAttribute})
+  useEntityDisplayName = false;
+
   displayEntityTypeSelect: boolean;
 
-  private readonly defaultEntityType: EntityType | AliasEntityType = null;
+  private defaultEntityType: EntityType | AliasEntityType = null;
 
-  private propagateChange = (v: any) => { };
+  private propagateChange = (_v: any) => { };
 
-  constructor(private store: Store<AppState>,
-              private entityService: EntityService,
-              public translate: TranslateService,
+  constructor(private entityService: EntityService,
               private fb: UntypedFormBuilder,
               private destroyRef: DestroyRef) {
 
@@ -96,7 +101,7 @@ export class EntityListSelectComponent implements ControlValueAccessor, OnInit, 
     this.propagateChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(_fn: any): void {
   }
 
   ngOnInit() {
@@ -114,9 +119,9 @@ export class EntityListSelectComponent implements ControlValueAccessor, OnInit, 
         this.updateView(this.modelValue.entityType, values);
       }
     );
-  }
-
-  ngAfterViewInit(): void {
+    if (isDefinedAndNotNull(this.predefinedEntityType)) {
+      this.defaultEntityType = this.predefinedEntityType;
+    }
   }
 
   setDisabledState(isDisabled: boolean): void {
@@ -145,7 +150,7 @@ export class EntityListSelectComponent implements ControlValueAccessor, OnInit, 
     this.entityListSelectFormGroup.get('entityIds').patchValue([...this.modelValue.ids], {emitEvent: true});
   }
 
-  updateView(entityType: EntityType | AliasEntityType | null, entityIds: Array<string> | null) {
+  private updateView(entityType: EntityType | AliasEntityType | null, entityIds: Array<string> | null) {
     if (this.modelValue.entityType !== entityType ||
       !this.compareIds(this.modelValue.ids, entityIds)) {
       this.modelValue = {
@@ -156,7 +161,7 @@ export class EntityListSelectComponent implements ControlValueAccessor, OnInit, 
     }
   }
 
-  compareIds(ids1: Array<string> | null, ids2: Array<string> | null): boolean {
+  private compareIds(ids1: Array<string> | null, ids2: Array<string> | null): boolean {
     if (ids1 !== null && ids2 !== null) {
       return JSON.stringify(ids1) === JSON.stringify(ids2);
     } else {
@@ -164,7 +169,7 @@ export class EntityListSelectComponent implements ControlValueAccessor, OnInit, 
     }
   }
 
-  toEntityIds(modelValue: EntityListSelectModel): Array<EntityId> {
+  private toEntityIds(modelValue: EntityListSelectModel): Array<EntityId> {
     if (modelValue !== null && modelValue.entityType && modelValue.ids && modelValue.ids.length > 0) {
       const entityType = modelValue.entityType;
       return modelValue.ids.map(id => ({entityType, id}));

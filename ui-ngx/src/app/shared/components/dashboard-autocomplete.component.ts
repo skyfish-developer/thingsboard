@@ -1,5 +1,5 @@
 ///
-/// Copyright © 2016-2025 The Thingsboard Authors
+/// Copyright © 2016-2026 The Thingsboard Authors
 ///
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -42,14 +42,15 @@ import { coerceBoolean } from '@shared/decorators/coercion';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 
 @Component({
-  selector: 'tb-dashboard-autocomplete',
-  templateUrl: './dashboard-autocomplete.component.html',
-  styleUrls: [],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => DashboardAutocompleteComponent),
-    multi: true
-  }]
+    selector: 'tb-dashboard-autocomplete',
+    templateUrl: './dashboard-autocomplete.component.html',
+    styleUrls: [],
+    providers: [{
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => DashboardAutocompleteComponent),
+            multi: true
+        }],
+    standalone: false
 })
 export class DashboardAutocompleteComponent implements ControlValueAccessor, OnInit {
 
@@ -190,15 +191,22 @@ export class DashboardAutocompleteComponent implements ControlValueAccessor, OnI
     this.searchText = '';
     if (value != null) {
       if (typeof value === 'string') {
-        this.dashboardService.getDashboardInfo(value).subscribe(
-          (dashboard) => {
+        this.dashboardService.getDashboardInfo(value, {ignoreLoading: true, ignoreErrors: true}).subscribe({
+          next: (dashboard) => {
             this.modelValue = this.useIdValue ? dashboard.id.id : dashboard;
             if (this.useDashboardLink) {
               this.dashboardURL = getEntityDetailsPageURL(this.modelValue as string, EntityType.DASHBOARD);
             }
             this.selectDashboardFormGroup.get('dashboard').patchValue(dashboard, {emitEvent: false});
+          },
+          error: () => {
+            this.modelValue = null;
+            this.selectDashboardFormGroup.get('dashboard').patchValue('', {emitEvent: false});
+            if (this.required) {
+              this.propagateChange(this.modelValue);
+            }
           }
-        );
+        });
       } else {
         this.modelValue = this.useIdValue ? value.id.id : value;
         this.selectDashboardFormGroup.get('dashboard').patchValue(value, {emitEvent: false});
