@@ -15,70 +15,150 @@
     limitations under the License.
 
 -->
-<div class="tb-login-content mat-app-background tb-dark flex flex-1 items-center justify-center">
-  <mat-card appearance="raised" style="max-height: 80vh; overflow-y: auto;">
-    <mat-card-content class="!p-6">
-      <form class="tb-login-form flex flex-col" [formGroup]="loginFormGroup" (ngSubmit)="login()">
-        <div class="flex flex-col items-center justify-start" style="padding: 16px 0;">
-          <tb-logo link="https://thingsboard.io" target="_blank" class="login-logo"></tb-logo>
+<div class="tb-login-content mat-app-background tb-dark flex flex-1">
+
+  <!-- Decorações de fundo aquático -->
+  <div class="bg-deco" aria-hidden="true">
+    <span class="deco-bubble b1"></span>
+    <span class="deco-bubble b2"></span>
+    <span class="deco-bubble b3"></span>
+    <span class="deco-bubble b4"></span>
+    <span class="deco-bubble b5"></span>
+    <span class="deco-bubble b6"></span>
+    <span class="deco-glow g1"></span>
+    <span class="deco-glow g2"></span>
+    <span class="deco-wave"></span>
+    <span class="deco-fish f1"></span>
+    <span class="deco-fish f2"></span>
+  </div>
+
+  <!-- Painel esquerdo: branding Sky Fish -->
+  <div class="login-brand-panel">
+    <div class="brand-content">
+      <tb-logo class="login-logo"></tb-logo>
+      <p class="brand-tagline">Tecnologia para a sua água,<br>saúde e segurança para seus peixes</p>
+      <p class="brand-description">
+        Monitoramento inteligente e automação para piscicultura.
+        Uma solução acessível e fácil de usar para o produtor rural brasileiro.
+      </p>
+      <div class="brand-divider"></div>
+      <div class="brand-features">
+        <div class="brand-feature-item">
+          <mat-icon>water</mat-icon>
+          <span>Monitoramento da qualidade da água 24h</span>
         </div>
-        <mat-progress-bar color="warn" mode="indeterminate" *ngIf="isLoading || (isLoading$ | async)">
-        </mat-progress-bar>
-        <span style="height: 4px;" *ngIf="!isLoading && !(isLoading$ | async)"></span>
-        <span tb-toast style="height: 20px;"></span>
-        <div class="flex flex-col">
-          @if(oauth2Clients?.length) {
-            <div class="oauth-container tb-default flex flex-col gap-4">
-              @if(oauth2Clients.length !== 1) {
-                <div class="title">{{ 'login.sign-in-with' | translate: {name: ''} }}</div>
-              }
-              <div class="login-button-container flex flex-wrap justify-center gap-4">
-                @for(oauth2Client of oauth2Clients; track oauth2Client.url) {
-                  <a mat-stroked-button class="login-with-button"
-                     [href]=getOAuth2Uri(oauth2Client)>
-                    <tb-icon matButtonIcon class="tb-mat-20">{{ oauth2Client.icon }}</tb-icon>
-                    @if(oauth2Clients.length === 1) {
-                      {{ 'login.sign-in-with' | translate: {name: oauth2Clients[0].name} }}
-                    } @else {
-                      {{ oauth2Client.name }}
-                    }
-                  </a>
+        <div class="brand-feature-item">
+          <mat-icon>settings_remote</mat-icon>
+          <span>Automação de aeradores e bombas</span>
+        </div>
+        <div class="brand-feature-item">
+          <mat-icon>notifications_active</mat-icon>
+          <span>Alertas em tempo real via app e web</span>
+        </div>
+        <div class="brand-feature-item">
+          <mat-icon>bar_chart</mat-icon>
+          <span>Relatórios e controle de produção</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Rodapé de contato -->
+  <div class="login-footer" aria-hidden="true">
+    <div class="login-footer-item">
+      <mat-icon>phone</mat-icon>
+      <span>(61) 98512-6500</span>
+    </div>
+    <span class="footer-sep">·</span>
+    <div class="login-footer-item">
+      <mat-icon>email</mat-icon>
+      <span>contato.skyfish@gmail.com</span>
+    </div>
+    <span class="footer-sep">·</span>
+    <div class="login-footer-item">
+      <svg class="footer-svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+      </svg>
+      <span>@skyfishbrasil</span>
+    </div>
+  </div>
+
+  <!-- Painel direito: formulário de login -->
+  <div class="login-form-panel">
+
+    <!-- Logo visível apenas no mobile -->
+    <div class="mobile-logo">
+      <tb-logo class="login-logo"></tb-logo>
+      <span class="mobile-tagline">Aquicultura inteligente</span>
+    </div>
+
+    <mat-card appearance="raised">
+      <mat-card-content class="!p-6">
+
+        <form class="tb-login-form flex flex-col" [formGroup]="loginFormGroup" (ngSubmit)="login()">
+          <mat-progress-bar color="warn" mode="indeterminate" *ngIf="isLoading || (isLoading$ | async)">
+          </mat-progress-bar>
+          <span style="height: 4px;" *ngIf="!isLoading && !(isLoading$ | async)"></span>
+          <span tb-toast style="height: 20px;"></span>
+          <div class="flex flex-col">
+            @if(oauth2Clients?.length) {
+              <div class="oauth-container tb-default flex flex-col gap-4">
+                @if(oauth2Clients.length !== 1) {
+                  <div class="title">{{ 'login.sign-in-with' | translate: {name: ''} }}</div>
                 }
+                <div class="login-button-container flex flex-wrap justify-center gap-4">
+                  @for(oauth2Client of oauth2Clients; track oauth2Client.url) {
+                    <a mat-stroked-button class="login-with-button"
+                       [href]=getOAuth2Uri(oauth2Client)>
+                      <tb-icon matButtonIcon class="tb-mat-20">{{ oauth2Client.icon }}</tb-icon>
+                      @if(oauth2Clients.length === 1) {
+                        {{ 'login.sign-in-with' | translate: {name: oauth2Clients[0].name} }}
+                      } @else {
+                        {{ oauth2Client.name }}
+                      }
+                    </a>
+                  }
+                </div>
+                <div class="container-divider">
+                  <mat-divider class="flex-1"></mat-divider>
+                  <div class="text">{{ "login.or" | translate | uppercase }}</div>
+                  <mat-divider class="flex-1"></mat-divider>
+                </div>
               </div>
-              <div class="container-divider">
-                <mat-divider class="tb-dark flex-1"></mat-divider>
-                <div class="text">{{ "login.or" | translate | uppercase }}</div>
-                <mat-divider class="tb-dark flex-1"></mat-divider>
+            } @else {
+              <div class="oauth-container flex flex-col">
+                <div class="form-header">
+                  <div class="form-title">{{ 'login.sign-in-to-your-account' | translate }}</div>
+                  <div class="form-subtitle">{{ 'login.sign-in-subtitle' | translate }}</div>
+                </div>
               </div>
+            }
+            <mat-form-field class="tb-autofilled" appearance="outline" hideRequiredMarker>
+              <mat-label translate>login.username</mat-label>
+              <input id="username-input" matInput type="email" formControlName="username" autocomplete="email"/>
+              <mat-icon matPrefix>email</mat-icon>
+              <mat-error *ngIf="loginFormGroup.get('username').invalid && loginFormGroup.get('username').dirty">
+                {{ 'login.invalid-email-format' | translate }}
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field class="tb-autofilled" appearance="outline">
+              <mat-label translate>common.password</mat-label>
+              <input id="password-input" matInput type="password" formControlName="password" autocomplete="current-password"/>
+              <tb-toggle-password matSuffix></tb-toggle-password>
+              <mat-icon matPrefix>lock</mat-icon>
+            </mat-form-field>
+            <button mat-flat-button color="accent" [disabled]="isLoading || (isLoading$ | async)"
+                    class="tb-action-button" type="submit">{{ 'login.sign-in' | translate }}</button>
+            <div class="forgot-password flex items-center justify-end gap-5">
+              <button class="tb-reset-password" mat-button type="button" routerLink="/login/resetPasswordRequest">
+                {{ (passwordViolation ? 'login.reset-password' : 'login.forgot-password') | translate }}
+              </button>
             </div>
-          } @else {
-            <div class="oauth-container flex flex-col">
-              <div class="title !mb-4" translate>login.sign-in-to-your-account</div>
-            </div>
-          }
-          <mat-form-field class="tb-autofilled" appearance="outline" hideRequiredMarker>
-            <mat-label translate>login.username</mat-label>
-            <input id="username-input" matInput type="email" autofocus formControlName="username" autocomplete="email"/>
-            <mat-icon matPrefix>email</mat-icon>
-            <mat-error *ngIf="loginFormGroup.get('username').invalid">
-              {{ 'login.invalid-email-format' | translate }}
-            </mat-error>
-          </mat-form-field>
-          <mat-form-field class="tb-autofilled" appearance="outline">
-            <mat-label translate>common.password</mat-label>
-            <input id="password-input" matInput type="password" formControlName="password" autocomplete="current-password"/>
-            <tb-toggle-password matSuffix></tb-toggle-password>
-            <mat-icon matPrefix>lock</mat-icon>
-          </mat-form-field>
-          <button mat-flat-button color="accent" [disabled]="isLoading || (isLoading$ | async)"
-                  class="tb-action-button" type="submit">{{ 'login.sign-in' | translate }}</button>
-          <div class="forgot-password flex items-center justify-end gap-5">
-            <button class="tb-reset-password" mat-button type="button" routerLink="/login/resetPasswordRequest">
-              {{ (passwordViolation ? 'login.reset-password' : 'login.forgot-password') | translate }}
-            </button>
           </div>
-        </div>
-      </form>
-    </mat-card-content>
-  </mat-card>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
 </div>
